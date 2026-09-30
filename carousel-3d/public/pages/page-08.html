@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>README</title>
+<!-- 원본: Suisse BP Intl(상용) + Sometype. 대체: Pretendard + Sometype Mono -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sometype+Mono:wght@400;500&display=swap" />
+<style>
+  :root {
+    /* 컬러: 원본 값 그대로 (무채색만) */
+    --off-white: #f9f4eb;
+    --off-black: #010101;
+    --dark:      #1a1c1c;
+    --line:      rgba(1, 1, 1, 0.14);
+
+    --font-sans: "Pretendard", Helvetica, Arial, sans-serif;
+    --font-mono: "Sometype Mono", ui-monospace, monospace;
+
+    /* 그리드: 원본 변수 */
+    --margin: 2.5rem;
+    --gutter: 0.625rem;
+
+    /* 스택 */
+    --header-h: 80px;
+    --peek: 60px;
+    --row-h: 360px;
+
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-io:  cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  @media (max-width: 767px) {
+    :root { --margin: 1rem; --peek: 44px; --row-h: 375px; --header-h: 72px; }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* 종이(off-white)는 body 가 그림. html 은 구멍으로 보일 뒤 배경:
+     단독으로 열면 검정, 캐러셀 창·썸네일 촬영에서는 투명(뒤의 장면이 비침) */
+  html { background: var(--off-black); overflow-x: clip; }
+  /* 투명 그라디언트: html 배경이 완전히 비면 body 의 종이색이 화면 전체로 번져(배경 전파) 구멍이 막히므로.
+     캐러셀 창에서는 뒤의 장면(클로드 로고)이 구멍으로 보입니다 */
+  html.is-embedded { background: linear-gradient(transparent, transparent); }
+  body { min-height: 100vh; }
+  body {
+    background: var(--off-white); color: var(--off-black);
+    font-family: var(--font-sans); -webkit-font-smoothing: antialiased;
+    word-break: keep-all;
+  }
+  ul { list-style: none; }
+
+  .mono {
+    font-family: var(--font-mono); font-size: 10px; line-height: 18px;
+    font-weight: 500; letter-spacing: -0.2px; text-transform: uppercase;
+  }
+
+  /* 페이지 번호: 캐러셀 1번 카드의 큰 숫자와 같은 자리·비율 (카드 500×375 에서 64px, 왼쪽 28px)
+     1008×756 창 기준 약 159px. 스크롤하면 인트로와 함께 위로 올라가 사라진다 */
+  .page-num {
+    position: absolute; z-index: 40;
+    left: var(--margin); margin-left: -0.05em; top: 4.5vh;
+    font-weight: 700; line-height: .8; letter-spacing: -0.03em;
+    font-size: min(21vh, 11vw);
+    pointer-events: none;
+    /* 뚫린 숫자: 글자 자체는 그리지 않고, 이 자리만큼 페이지(body)에 구멍을 냅니다 (아래 스크립트).
+       구멍으로 페이지 뒤의 배경(캐러셀 장면)이 그대로 보입니다 */
+    color: transparent;
+  }
+
+  /* ───────── 인트로 문단 ───────── */
+  .intro { padding: 200px var(--margin) 120px; }
+  .intro p {
+    max-width: 580px;
+    font-size: clamp(18px, 1.6vw, 24px); line-height: 1.3; letter-spacing: -0.02em;
+  }
+
+
+  /* ───────── 스태킹 행 ───────── */
+  .stack { position: relative; padding: 0 var(--margin); }
+  .row {
+    position: sticky;
+    top: calc(var(--header-h) + var(--i) * var(--peek));
+    height: var(--row-h);
+    background: var(--off-white);
+    display: grid;
+    grid-template-columns: 2fr 5fr 5fr;
+    column-gap: var(--gutter);
+    padding: 30px 0 60px;
+  }
+  .row::before, .row::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; }
+  .row::before { background: var(--line); }
+  .row::after {
+    background: var(--off-black);
+    transform-origin: left center;
+    transform: scaleX(var(--progress, 0));
+  }
+
+  .num, .title { font-weight: 700; line-height: .8; }
+  .num   { font-size: clamp(40px, 4.9vw, 70px); letter-spacing: -0.02em; }
+  .title { font-size: clamp(34px, 4.17vw, 60px); letter-spacing: -0.04em; white-space: nowrap; }
+  .mid { display: flex; flex-direction: column; justify-content: space-between; }
+  .items { display: grid; gap: 16px; }
+  /* 행 안의 작은 제목([ … ])과 항목 목록: 글자 +3px, 굵기 600, 행간 넓게 */
+  .items .mono { font-size: 13px; line-height: 22px; font-weight: 600; }
+  .list { font-size: clamp(19px, calc(1.25vw + 3px), 21px); line-height: 1.5; font-weight: 600; letter-spacing: -0.02em; }
+  .desc {
+    justify-self: end; max-width: 330px;
+    font-size: clamp(15px, 1.25vw, 18px); line-height: 1.2; letter-spacing: -0.02em;
+  }
+  /* 줄을 직접 나눈 설명: 나눈 자리에서만 줄바꿈 */
+  .desc--lines { max-width: none; white-space: pre-line; }
+
+  /* 한글 글자 윗부분이 마스크에 잘리지 않도록 위아래 여유 (margin 으로 상쇄해 배치는 그대로) */
+  .reveal { overflow: hidden; display: block; padding: .15em 0 .08em; margin-top: -.15em; }
+  .title .reveal, .answer h2 .reveal { padding-top: .25em; margin-top: -.25em; }
+  .reveal > span {
+    display: block; transform: translateY(110%);
+    transition: transform .9s var(--ease-out);
+    transition-delay: calc(var(--d, 0) * 70ms);
+  }
+  .is-in .reveal > span { transform: none; }
+
+  @media (max-width: 767px) {
+    .row { grid-template-columns: auto 1fr; grid-template-rows: auto auto 1fr; column-gap: 16px; row-gap: 16px; padding: 22px 0 32px; }
+    .num { grid-row: 1; }
+    .title { grid-column: 2; white-space: normal; }
+    .desc { grid-column: 1 / -1; grid-row: 2; justify-self: start; }
+    .mid { display: contents; }
+    .items { grid-column: 1 / -1; grid-row: 3; align-self: end; }
+  }
+
+  /* 스크롤 끝 = 모든 행이 쌓인 상태. 마지막 행이 멈추는 지점에서 페이지가 끝나도록
+     꼬리 여백을 "화면 높이 - 마지막 행의 멈춤 위치 - 행 높이" 만큼만 둡니다 (--n: 행 개수) */
+  .stack-tail {
+    height: max(0px, calc(100vh - var(--header-h) - (var(--n) - 1) * var(--peek) - var(--row-h)));
+  }
+
+  /* 스크롤바가 생기면 폭이 줄어 카드 스크린샷과 배치가 어긋나므로 숨김 (스크롤은 그대로 됨) */
+  html.is-embedded { scrollbar-width: none; }
+  html.is-embedded::-webkit-scrollbar { display: none; }
+  /* 썸네일 촬영: 리빌이 끝난 첫 화면 상태로 고정 */
+  .is-shot .reveal > span { transform: none !important; transition: none !important; }
+  .is-instant .reveal > span { transition: none !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal > span { transform: none; transition: none; }
+    .row::after { transform: scaleX(1); }
+  }
+</style>
+<link rel="stylesheet" href="page.css" />
+</head>
+<body>
+  <script>
+    // 캐러셀 창(iframe) 안에서 열렸는지, 카드 썸네일 촬영용(?shot)인지 표시
+    if (window.self !== window.top || location.search.includes("embed")) document.documentElement.classList.add("is-embedded");
+    if (location.search.includes("shot")) document.documentElement.classList.add("is-shot");
+    // ?holebg=000 / ?holebg=fff: 썸네일 촬영용. 구멍 뒤 색을 바꿔 두 번 찍어 투명도를 계산 (scripts/shoot-page.py)
+    const holeBg = new URLSearchParams(location.search).get("holebg");
+    if (holeBg) document.documentElement.style.background = "#" + holeBg;
+    // ?instant: 캐러셀 창이 열릴 때 첫 화면을 카드 스크린샷과 같은 상태(리빌 끝)로 바로 보여줌.
+    // 첫 화면 밖의 행은 스크롤하면 평소처럼 리빌됩니다.
+    if (location.search.includes("instant")) {
+      document.documentElement.classList.add("is-instant");
+      setTimeout(() => document.documentElement.classList.remove("is-instant"), 600);
+    }
+  </script>
+
+  <div class="page-num" aria-hidden="true">08</div>
+
+  <main>
+    <section class="intro js-reveal">
+      <h1 class="intro-title">
+        <span class="reveal"><span>README</span></span>
+        <span class="reveal"><span style="--d:1">이 홈페이지를 만든 방법</span></span>
+      </h1>
+    </section>
+
+    <section class="stack" id="stack"></section>
+  </main>
+
+<script type="module">
+  // 캐러셀 창 안에서는 ESC 가 부모까지 가지 않으므로 메시지로 창 닫기를 요청
+  if (window.self !== window.top) {
+    addEventListener("keydown", e => {
+      if (e.key === "Escape") parent.postMessage({ type: "page-window:close" }, location.origin);
+    });
+  }
+
+  // 새로고침하면 맨 위에서 시작 (진입 리빌을 처음부터 보이게)
+  history.scrollRestoration = "manual";
+  scrollTo(0, 0);
+
+  // PRD 페이지 8 (v3.2): 리드미 (README)
+  const ROWS = [
+    { title: "디자인", kicker: "[ 모으고, 다듬는다 ]",
+      items: ["레퍼런스 수집 (비핸스 · 드리블 · 핀터레스트)", "디자인 스킬: 임페커블 (impeccable)"],
+      desc: "" },
+    { title: "3D 캐러셀", kicker: "[ React + Three.js ]",
+      items: ["React로 화면 구성", "Three.js로 3D 카드", "React Three Fiber · drei"],
+      desc: "홈 화면은 React로 만들고,\n3D 카드 캐러셀은 Three.js로 구현했다.\n카드 테두리와 모서리는 셰이더로 그렸다." },
+    { title: "모션", kicker: "[ 애니메이션 ]",
+      items: ["Framer Motion 카드 → 창 전환", "Lenis 부드러운 스크롤", "캔버스로 그린 커서 꼬리"],
+      desc: "카드를 누르면 그 자리에서 창으로 펴지고,\n페이지는 부드럽게 스크롤되며\n마우스를 따라 주황 선이 꼬리처럼 남는다." },
+    { title: "페이지", kicker: "[ HTML · CSS · JS ]",
+      items: ["스크롤하면 쌓이는 행", "마스크로 뚫은 페이지 번호", "iframe으로 창 안에 표시"],
+      desc: "각 페이지는 HTML·CSS·JS로 만들고,\n스크롤하면 행이 한 줄씩 쌓인다.\n페이지 번호는 뚫려 있어 뒤 배경이 보인다." },
+    { title: "만든 도구", kicker: "[ Made with Claude Code ]",
+      items: ["Vite 개발 서버", "Zustand 상태 관리", "클로드코드 + PRD.md"],
+      desc: "PRD.md를 클로드코드와 같이 쓰고,\n그 문서대로 모든 페이지를 만들었다." },
+  ];
+
+  const R = (t, d = 0) => `<span class="reveal"><span style="--d:${d}">${t}</span></span>`;
+  document.getElementById("stack").innerHTML = ROWS.map((r, i) => `
+    <article class="row js-reveal" style="--i:${i}">
+      <div class="num">${R(String(i + 1).padStart(2, "0"))}</div>
+      <div class="mid">
+        <h2 class="title">${R(r.title, 1)}</h2>
+        <div class="items">
+          <div class="mono">${R(r.kicker, 2)}</div>
+          <ul class="list">${r.items.map((t, j) => `<li class="reveal"><span style="--d:${j + 3}">${t}</span></li>`).join("")}</ul>
+        </div>
+      </div>
+      <p class="desc${r.desc.includes("\n") ? " desc--lines" : ""}">${R(r.desc, 2)}</p>
+    </article>`).join("") + `<div class="stack-tail" style="--n:${ROWS.length}"></div>`;
+
+  // 페이지 번호 모양으로 body(종이)에 구멍 내기: 숫자를 캔버스에 그려 마스크로 뺌.
+  const numEl = document.querySelector(".page-num");
+  let hole = null; // { x, y } 문서 기준 위치 (번호와 함께 스크롤됨)
+  function placeHole() {
+    if (!hole) return;
+    const pos = `0 0, ${hole.x}px ${hole.y}px`;
+    document.body.style.setProperty("-webkit-mask-position", pos);
+    document.body.style.setProperty("mask-position", pos);
+  }
+  function punch() {
+    const cs = getComputedStyle(numEl);
+    const size = parseFloat(cs.fontSize), lh = parseFloat(cs.lineHeight) || size * .8;
+    const dpr = Math.max(2, devicePixelRatio);
+    const c = document.createElement("canvas"), ctx = c.getContext("2d");
+    const font = `${cs.fontWeight} ${size}px ${cs.fontFamily}`;
+    ctx.font = font;
+    const m = ctx.measureText(numEl.textContent);
+    const w = Math.ceil(m.width + size * .2), h = Math.ceil(lh + size * .4);
+    c.width = w * dpr; c.height = h * dpr;
+    ctx.scale(dpr, dpr);
+    ctx.font = font; ctx.letterSpacing = cs.letterSpacing; ctx.textBaseline = "alphabetic";
+    const A = m.fontBoundingBoxAscent, D = m.fontBoundingBoxDescent;
+    const pad = size * .2; // 위쪽 여유 (캔버스 안)
+    const baseline = pad + (lh - (A + D)) / 2 + A;
+    ctx.fillStyle = "#000"; ctx.fillText(numEl.textContent, 0, baseline);
+    const r = numEl.getBoundingClientRect();
+    hole = { x: r.left + scrollX, y: r.top + scrollY - pad };
+    const url = c.toDataURL(), b = document.body.style;
+    b.setProperty("-webkit-mask-image", `linear-gradient(#000,#000), url(${url})`);
+    b.setProperty("mask-image", `linear-gradient(#000,#000), url(${url})`);
+    b.setProperty("-webkit-mask-repeat", "no-repeat"); b.setProperty("mask-repeat", "no-repeat");
+    b.setProperty("-webkit-mask-size", `100% 100%, ${w}px ${h}px`); b.setProperty("mask-size", `100% 100%, ${w}px ${h}px`);
+    b.setProperty("-webkit-mask-composite", "xor"); b.setProperty("mask-composite", "exclude");
+    placeHole();
+  }
+  document.fonts.ready.then(punch);
+  addEventListener("resize", punch);
+
+  // 진입 리빌
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add("is-in"); io.unobserve(e.target); }
+  }), { threshold: 0.25 });
+  document.querySelectorAll(".js-reveal").forEach(el => io.observe(el));
+
+  // 구분선 진행도
+  const rows = [...document.querySelectorAll(".row")];
+
+  function update() {
+    const vh = innerHeight;
+    rows.forEach((row, i) => {
+      const stickTop = parseFloat(getComputedStyle(row).top); // 행이 멈추는 높이 (CSS 계산값)
+      const p = Math.min(1, Math.max(0, (vh - row.getBoundingClientRect().top) / (vh - stickTop)));
+      row.style.setProperty("--progress", p.toFixed(3));
+    });
+  }
+
+  let ticking = false;
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { update(); ticking = false; });
+  };
+  addEventListener("scroll", onScroll, { passive: true });
+  addEventListener("resize", onScroll);
+  update();
+
+  // Lenis 부드러운 스크롤 (원본 사이트와 동일)
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    try {
+      const { default: Lenis } = await import("https://cdn.jsdelivr.net/npm/lenis@1.1.13/+esm");
+      const lenis = new Lenis({ lerp: 0.1 });
+      lenis.on("scroll", onScroll);
+      (function raf(t) { lenis.raf(t); requestAnimationFrame(raf); })();
+    } catch { /* 네이티브 스크롤 */ }
+  }
+</script>
+</body>
+</html>

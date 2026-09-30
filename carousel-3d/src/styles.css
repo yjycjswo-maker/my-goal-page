@@ -1,0 +1,547 @@
+/* ---------- 토큰 (원본 Tailwind 설정에서 확인된 값) ---------- */
+/* 다크 테마(원본). 라이트로 바꾸려면 color-1 ↔ color-2 를 바꾸고
+   color-5 / color-8 / --dim / 오버레이 그라디언트의 흑백을 반대로 두면 됩니다. */
+:root {
+  --color-1: #ffffff; /* 글자 */
+  --color-2: #000000; /* 배경 */
+  --color-3: #ddfa42; /* 포인트 */
+  --color-5: hsla(0, 0%, 100%, 0.1); /* 반투명 버튼 배경 */
+  --color-8: rgba(0, 0, 0, 0.6);
+  --dim: rgba(0, 0, 0, 0.55); /* 상세 창 뒤 딤 */
+  --container-sm: 2.4rem;
+  --container-md: 4.8rem;
+  --container-xl: 6.2rem;
+}
+
+/* 원본과 같은 유동 rem. 뷰포트 폭에 따라 1rem ≈ 8~10px */
+html {
+  font-size: calc(-0.175rem + 0.6667vw);
+}
+@media screen and (max-width: 1620px) {
+  html {
+    font-size: calc(0.4437rem + 0.1174vw);
+  }
+}
+@media screen and (max-width: 768px) {
+  html {
+    font-size: calc(0.4998rem + 0.2608vw);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--color-2);
+  color: var(--color-1);
+  font-family: 'Helvetica Neue', Helvetica, Arial, 'Apple SD Gothic Neo', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ---------- 레이아웃 ---------- */
+.Overlay {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  height: 15%;
+  z-index: 1990;
+  pointer-events: none;
+}
+.Overlay--top {
+  top: 0;
+  background-image: linear-gradient(0deg, rgba(1, 1, 1, 0) 15.2%, rgba(1, 1, 1, 0.5) 51%, rgba(0, 0, 0, 0.85) 84.8%);
+}
+.Overlay--bottom {
+  bottom: 0;
+  background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.85) 9.5%, rgba(1, 1, 1, 0.5) 51%, rgba(1, 1, 1, 0) 84.8%);
+}
+
+.Main {
+  position: relative;
+  min-height: 100svh;
+  background: var(--color-2);
+}
+
+/* ---------- ProjectsOverview ---------- */
+.ProjectsOverview {
+  position: relative;
+}
+.ProjectsOverview__stage {
+  position: relative;
+  height: 100svh;
+  width: 100%;
+}
+.Scene {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  touch-action: none;
+}
+
+.ProjectsOverview__bar {
+  position: absolute;
+  right: 0;
+  bottom: 20px;
+  z-index: 1994;
+  display: flex;
+  align-items: center;
+  gap: 2.4rem;
+  padding: 0 var(--container-sm);
+}
+@media (min-width: 768px) {
+  .ProjectsOverview__bar {
+    bottom: 38px;
+    padding: 0 var(--container-md);
+  }
+}
+@media (min-width: 1280px) {
+  .ProjectsOverview__bar {
+    padding: 0 var(--container-xl);
+  }
+}
+.ProjectsOverview__label {
+  margin: 0;
+  font-size: 1.6rem;
+  line-height: 1;
+  opacity: 0.6;
+}
+
+/* ---------- IntroBadge (좌상단 작은 오렌지 인트로) ---------- */
+/* 우하단 바와 대칭인 여백. 오버레이(1990) 위, 상세 창 백드롭(2100) 아래 */
+.IntroBadge {
+  position: absolute;
+  top: 20px;
+  left: var(--container-sm);
+  /* 창 백드롭(2099) 위, 창(2101) 아래: 창이 열려도 로고가 흐려지지 않고,
+     페이지 번호 구멍 너머로 그대로 보이도록 */
+  z-index: 2100;
+  width: clamp(16rem, 18vw, 30rem);
+  aspect-ratio: 16 / 9;
+  /* 로고는 16:9 무대 가운데에 그려지므로, 무대 위쪽 빈 공간만큼 끌어올림 */
+  translate: 0 -32%;
+}
+@media (min-width: 768px) {
+  .IntroBadge {
+    top: 38px;
+    left: var(--container-md);
+  }
+}
+@media (min-width: 1280px) {
+  .IntroBadge {
+    left: var(--container-xl);
+  }
+}
+.IntroBadge__stage {
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+/* 시작 화면: 같은 요소가 전체 화면으로 떠 있다가, 가운데 로고를 누르면 위 .IntroBadge 자리로 줄어듭니다 (IntroBadge.jsx) */
+.IntroBadge.IntroBadge--splash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  translate: none;
+  z-index: 2400; /* 창(2101) 위, 커서 꼬리(2499)·커서(2500) 아래 */
+}
+.IntroBadge--splash .IntroBadge__stage {
+  cursor: default;
+}
+/* 가운데 로고(✱ CLAUDE) 위의 투명한 클릭 영역. 위치·크기는 인트로가 알려 줍니다 (lockupRect) */
+.IntroBadge__hit {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.IntroBadge__hit:focus-visible {
+  outline: 1px solid var(--color-3);
+  outline-offset: 1.2rem;
+}
+.IntroBadge__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2399;
+  background: var(--color-2);
+}
+/* 로딩 진행 바: 가운데 로고 바로 아래 (모션이 끝났는데 아직 로딩 중일 때만) */
+.IntroBadge__enter {
+  position: fixed;
+  top: calc(50% + 6.5vw + 4rem);
+  left: 50%;
+  z-index: 2401;
+  transform: translateX(-50%);
+}
+.IntroBadge__progress {
+  position: relative;
+  width: 20rem;
+  height: 2px;
+  overflow: hidden;
+  background: var(--color-5);
+}
+.IntroBadge__progressFill {
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  background: var(--color-3);
+}
+/* 좌상단 자리를 재기 위한 보이지 않는 상자 */
+.IntroBadge--ghost {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ---------- PillButton (원본 Link primary) ---------- */
+.PillButton {
+  display: inline-block;
+  pointer-events: auto;
+}
+.PillButton__link {
+  display: flex;
+  align-items: center;
+  color: var(--color-1);
+}
+.PillButton__label {
+  position: relative;
+  z-index: 10;
+  display: block;
+  padding: 1.05rem 1.8rem 1rem;
+  border-radius: 10rem;
+  background: var(--color-5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 1.6rem;
+  line-height: 1.1;
+  transition: background-color 0.35s, color 0.35s;
+}
+.PillButton:hover .PillButton__label {
+  background: var(--color-3);
+  color: var(--color-2);
+}
+.PillButton__mask {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.PillButton__text {
+  display: block;
+}
+.PillButton__text--clone {
+  position: absolute;
+  inset: 0;
+}
+
+/* ---------- LoadingBar ---------- */
+.LoadingBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100svh;
+}
+.LoadingBar__track {
+  position: relative;
+  height: 2px;
+  width: 20rem;
+  background: var(--color-5);
+}
+@media (min-width: 768px) {
+  .LoadingBar__track {
+    width: 36rem;
+  }
+}
+.LoadingBar__fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  background: var(--color-3);
+}
+
+/* ---------- Cursor (mouse-follower 대체) ---------- */
+.Cursor {
+  --claude: #f95933;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2500;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  will-change: transform;
+}
+.Cursor.is-visible {
+  opacity: 1;
+}
+.Cursor__inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* gabrielveres.com 커서(Cuberto mouse-follower -pointer 상태)와 같은 26px · 1px 선 링.
+     색은 화면의 CLAUDE 로고 주황(orange-intro palette.orange) */
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: transparent;
+  /* 평소엔 링을 숨기고 꼬리 선(.CursorTrail)만 보임. 카드 제목이 뜰 때만 테두리 표시 */
+  border: 1px solid transparent;
+  transition: width 0.3s, height 0.3s, padding 0.3s, border-color 0.3s;
+}
+.Cursor.is-text .Cursor__inner {
+  width: auto;
+  height: auto;
+  padding: 1.1rem 1.8rem 1rem;
+  border-color: var(--claude);
+}
+.Cursor__text {
+  display: block;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  white-space: nowrap;
+  color: var(--claude);
+  font-size: 1.6rem;
+  line-height: 1.1;
+  transition: opacity 0.3s, max-width 0.3s;
+}
+.Cursor.is-text .Cursor__text {
+  max-width: 40rem;
+  opacity: 1;
+}
+/* 커서 꼬리 선 (Cursor.jsx). 링 바로 아래 층 */
+.CursorTrail {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2499;
+  pointer-events: none;
+}
+@media (hover: none) {
+  .Cursor,
+  .CursorTrail {
+    display: none;
+  }
+}
+
+/* ---------- ProjectWindow (카드 클릭 → 카드 자리에서 커지는 창) ---------- */
+.ProjectWindow__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2099; /* .Overlay(1990) 보다 위, 로고 배지(.IntroBadge 2100) 아래 */
+  background: var(--dim);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: default;
+}
+.ProjectWindow {
+  position: fixed;
+  z-index: 2101; /* 백드롭 위, .Overlay(1990) 보다 위 */
+  overflow: hidden;
+  background: transparent; /* 카드 이미지가 반투명(PNG 알파)이라 뒤의 흐려진 장면이 비칩니다 */
+  /* 테두리는 .ProjectWindow__frame 이 그립니다 (config.js CARD_BORDER) */
+  /* 위치/크기는 최종 사각형으로 고정하고, 카드 자리 → 가운데 로 펴지는 움직임은 matrix3d(원근 변환)로만 그립니다. */
+  transform-origin: 0 0;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+.ProjectWindow__media {
+  position: absolute;
+  inset: 0;
+}
+.ProjectWindow__frame {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.ProjectWindow__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+/* project.page 카드: 창 안의 실제 페이지. 스크린샷(img)과 같은 자리·크기 */
+.ProjectWindow__page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* 크기는 PAGE_W × PAGE_H 고정, scale 로 창에 맞춤 (ProjectWindow.jsx) */
+  border: 0;
+  /* 투명: 페이지의 뚫린 부분(페이지 번호)으로 뒤 장면이 보이도록. 종이색은 페이지 body 가 그림 */
+  background: transparent;
+  color-scheme: normal;
+}
+/* 페이지 위를 덮는 글자 레이어는 클릭을 통과시키고, 버튼만 받습니다 (그래야 페이지를 스크롤할 수 있음) */
+.ProjectWindow--page .ProjectWindow__chrome {
+  pointer-events: none !important;
+}
+.ProjectWindow--page .PillButton {
+  pointer-events: auto;
+}
+body.has-page-window .Cursor,
+body.has-page-window .CursorTrail {
+  display: none;
+}
+.ProjectWindow__chrome {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2.4rem 2.8rem;
+  /* 이미지 위에 그라디언트를 깔지 않습니다. 글자는 text-shadow 로만 가독성을 확보합니다. */
+  background: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6), 0 0 24px rgba(0, 0, 0, 0.35);
+}
+.ProjectWindow__head,
+.ProjectWindow__foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 2.4rem;
+}
+.ProjectWindow__head {
+  align-items: flex-start;
+}
+.ProjectWindow__foot {
+  align-items: flex-end;
+}
+.ProjectWindow__heading {
+  min-width: 0;
+}
+.ProjectWindow__eyebrow {
+  margin: 0 0 0.8rem;
+  font-size: 1.4rem;
+  letter-spacing: 0.08em;
+  opacity: 0.6;
+}
+.ProjectWindow__title {
+  margin: 0;
+  font-size: 4.8rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+/* 아이콘 모드(SHOW_TEXT=false)의 × / ↗ 버튼: 참고 카드의 흰 원 버튼처럼 */
+.ProjectWindow--icons .PillButton__label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.4rem;
+  height: 4.4rem;
+  padding: 0;
+  border-radius: 50%;
+  background: #fff;
+  color: #111;
+  font-size: 2rem;
+  line-height: 1;
+}
+.ProjectWindow--icons .PillButton:hover .PillButton__label {
+  background: var(--color-3);
+  color: var(--color-2);
+}
+.ProjectWindow__meta {
+  margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.3;
+  opacity: 0.6;
+}
+@media (max-width: 767px) {
+  .ProjectWindow__chrome {
+    padding: 1.6rem 1.8rem;
+  }
+  .ProjectWindow__title {
+    font-size: 3.2rem;
+  }
+  .ProjectWindow__meta {
+    display: none;
+  }
+}
+
+/* ---------- 프로젝트 페이지 자리 ---------- */
+.Placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.6rem;
+  min-height: 100svh;
+  text-align: center;
+}
+.Placeholder__eyebrow {
+  margin: 0;
+  font-size: 1.4rem;
+  opacity: 0.5;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.Placeholder__title {
+  margin: 0;
+  font-size: 5.2rem;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+.Placeholder__back {
+  margin-top: 2.4rem;
+  padding: 1.05rem 1.8rem 1rem;
+  border-radius: 10rem;
+  background: var(--color-5);
+  font-size: 1.6rem;
+  transition: background-color 0.35s, color 0.35s;
+}
+.Placeholder__back:hover {
+  background: var(--color-3);
+  color: var(--color-2);
+}
+
+/* 페이지 카드 창: 닫기(×) 버튼 숨김 — 창 밖 클릭 또는 ESC 로 닫습니다 */
+.ProjectWindow--page .ProjectWindow__head .PillButton { display: none; }
+
+/* 키보드로 카드 열기 (CardKeys.jsx): 평소엔 보이지 않고, Tab 으로 포커스된 버튼만 화면 아래 가운데에 이름표로 보임 */
+.CardKeys ol { list-style: none; margin: 0; padding: 0; }
+.CardKeys__button {
+  position: fixed; left: 50%; bottom: 32px; z-index: 2050;
+  translate: -50% 0;
+  width: 1px; height: 1px; padding: 0; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+  border: 0; background: #1a1c1c; color: #f9f4eb;
+  font: 600 14px/1 "Pretendard", Helvetica, Arial, sans-serif; letter-spacing: -0.01em;
+  cursor: pointer;
+}
+.CardKeys__button:focus-visible {
+  width: auto; height: auto; padding: 12px 18px; clip-path: none;
+  outline: 2px solid #f95933; outline-offset: 3px;
+}

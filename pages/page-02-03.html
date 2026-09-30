@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>배우고 싶은 것 · 이루고 싶은 목표</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sometype+Mono:wght@400;500;700&display=swap" />
+<style>
+  :root {
+    /* 컬러: Lama Lama 무채색 + 노선 색 코랄 하나 (design-reference/lamalama-analysis.md 7번) */
+    --off-white: #f9f4eb;
+    --off-black: #010101;
+    --dark:      #1a1c1c;
+    --line:      rgba(1, 1, 1, 0.14);
+    --muted:     rgba(1, 1, 1, 0.45);
+    --chip:      #ffffff;
+    --coral:     #d97757;
+
+    --font-sans: "Pretendard", Helvetica, Arial, sans-serif;
+    --font-mono: "Sometype Mono", ui-monospace, monospace;
+
+    --margin: 2.5rem;
+    --gutter: 0.625rem;
+    --header-h: 80px;
+    --peek: 60px;
+    --row-h: 400px;
+
+    /* PRD 7.2 시간·이징 */
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-io:  cubic-bezier(0.65, 0, 0.35, 1);
+    --ease-move: cubic-bezier(0.83, 0, 0.17, 1);
+  }
+  @media (max-width: 1023px) {
+    :root { --margin: 1rem; --peek: 44px; --row-h: auto; --header-h: 72px; }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--off-white); overflow-x: clip; }
+  body {
+    background: var(--off-white); color: var(--off-black);
+    font-family: var(--font-sans); -webkit-font-smoothing: antialiased;
+    overflow-x: hidden; word-break: keep-all;
+  }
+  ::selection { background: var(--coral); color: var(--off-white); }
+  ul { list-style: none; }
+
+  .mono {
+    font-family: var(--font-mono); font-size: 10px; line-height: 18px;
+    font-weight: 500; letter-spacing: -0.2px; text-transform: uppercase;
+  }
+  .coral { color: var(--coral); }
+
+  /* ───────── 고정 UI ───────── */
+  .header {
+    position: fixed; top: 16px; left: 50%; translate: -50% 0; z-index: 50;
+    width: min(440px, calc(100vw - 2 * var(--margin) - 190px));
+    height: 44px; padding: 0 14px;
+    display: flex; align-items: center; gap: 12px;
+    background: var(--chip); border-radius: 2px;
+  }
+  .badge-num {
+    display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--coral); color: var(--off-white);
+    font: 700 10px/1 var(--font-mono);
+  }
+  .tagline { height: 18px; overflow: hidden; flex: 1; text-align: center; }
+  .tagline span { display: block; transition: transform .6s var(--ease-io), opacity .6s; }
+  .tagline span.out { transform: translateY(-100%); opacity: 0; }
+  .tagline span.in-start { transform: translateY(100%); opacity: 0; transition: none; }
+  .burger { width: 16px; display: grid; gap: 3px; }
+  .burger i { height: 2px; background: var(--off-black); }
+
+  .cta { position: fixed; top: 16px; right: var(--margin); z-index: 50; display: grid; gap: 6px; width: 170px; }
+  .cta-main {
+    display: flex; align-items: center; gap: 10px; height: 44px; padding: 5px 12px 5px 5px;
+    background: var(--dark); color: var(--off-white); border-radius: 2px;
+    text-decoration: none; border: 0; cursor: pointer; text-align: left;
+  }
+  .cta-main .sq { width: 34px; height: 34px; display: grid; place-items: center; background: var(--coral); border-radius: 1px; font-size: 14px; }
+  .cta-sub {
+    display: flex; justify-content: space-between; align-items: center;
+    height: 30px; padding: 0 10px; background: var(--chip); border-radius: 2px;
+    border: 0; cursor: pointer; color: inherit;
+  }
+  .cta-sub .arrow { display: inline-block; animation: nudge 1.6s var(--ease-io) infinite; }
+  @keyframes nudge { 50% { transform: translateX(3px); } }
+
+  /* 노선도 인디케이터 (PRD F3): 8개 역 중 현재 역만 채움 */
+  .route-ind {
+    position: fixed; right: var(--margin); bottom: 16px; z-index: 50; display: flex; align-items: center;
+    padding: 6px 10px; background: var(--chip); border-radius: 2px;
+  }
+  .route-ind .dot {
+    position: relative; width: 9px; height: 9px; border-radius: 50%;
+    border: 1.5px solid var(--off-black); background: var(--off-white);
+    transition: background .3s, border-color .3s, transform .3s var(--ease-out);
+  }
+  .route-ind .seg { width: 12px; height: 1.5px; background: var(--off-black); }
+  .route-ind .dot.passed { background: var(--off-black); }
+  .route-ind .dot.current { background: var(--coral); border-color: var(--coral); transform: scale(1.35); }
+  .route-ind .lbl { margin-right: 10px; }
+
+  @media (max-width: 1023px) {
+    .header { left: var(--margin); translate: 0 0; width: calc(100vw - 2 * var(--margin) - 50px); }
+    .cta { width: 44px; }
+    .cta-main { padding: 5px; }
+    .cta-main .txt, .cta-sub { display: none; }
+    .route-ind { left: 50%; right: auto; translate: -50% 0; }
+    .route-ind .lbl { display: none; }
+  }
+
+  .cursor-chip {
+    position: fixed; left: 0; top: 0; z-index: 60; pointer-events: none;
+    padding: 2px 6px; background: var(--chip); border-radius: 1px;
+    translate: 10px -24px; opacity: 0; transition: opacity .25s; white-space: nowrap;
+  }
+  .cursor-chip.show { opacity: 1; }
+
+  /* ───────── 공통: 리빌 ───────── */
+  .reveal { display: block; overflow: hidden; padding-bottom: .06em; }
+  .reveal > span {
+    display: block; transform: translateY(110%);
+    transition: transform .9s var(--ease-out);
+    transition-delay: calc(var(--d, 0) * 70ms);
+  }
+  .is-in .reveal > span, .reveal.is-in > span { transform: none; }
+  .fade { opacity: 0; transform: translateY(12px); transition: opacity .6s var(--ease-io), transform .6s var(--ease-io); transition-delay: calc(var(--d, 0) * 70ms); }
+  .is-in .fade, .fade.is-in { opacity: 1; transform: none; }
+
+  /* ───────── 페이지 인트로 ───────── */
+  .page { position: relative; }
+  .intro {
+    padding: calc(var(--header-h) + 120px) var(--margin) 120px;
+    display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gutter); row-gap: 48px;
+  }
+  .intro .kicker { grid-column: 1 / -1; display: flex; gap: 24px; }
+  .page-title {
+    grid-column: 1 / 10;
+    font-weight: 800; font-size: clamp(44px, 7.2vw, 112px); line-height: .92; letter-spacing: -0.045em;
+  }
+  .headline {
+    grid-column: 1 / 7; align-self: end;
+    font-weight: 700; font-size: clamp(22px, 2.2vw, 32px); line-height: 1.15; letter-spacing: -0.03em;
+  }
+  .lead {
+    grid-column: 8 / 13; align-self: end;
+    font-size: clamp(16px, 1.25vw, 18px); line-height: 1.45; letter-spacing: -0.02em;
+  }
+  @media (max-width: 1023px) {
+    .intro { padding-top: calc(var(--header-h) + 64px); padding-bottom: 72px; row-gap: 28px; }
+    .page-title, .headline, .lead { grid-column: 1 / -1; }
+  }
+
+  /* ───────── 2페이지 노선도 (PRD 7.4 역 02) ───────── */
+  .route {
+    grid-column: 1 / -1; position: relative; margin-top: 24px;
+    display: grid; grid-template-columns: 3fr 1fr 3fr; column-gap: var(--gutter);
+  }
+  .route-track { position: absolute; left: 0; right: 0; top: 36px; height: 2px; background: var(--line); }
+  .route-track::after {
+    content: ""; position: absolute; inset: 0; background: var(--coral);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 1.8s var(--ease-io) .2s;
+  }
+  .route.is-in .route-track::after { transform: scaleX(1); }
+  .leg { position: relative; }
+  .leg-label { display: flex; gap: 8px; margin-bottom: 26px; }
+  .leg-label b { font-weight: 700; }
+  .stations { display: grid; grid-template-columns: repeat(var(--n), 1fr); column-gap: var(--gutter); }
+  .station { display: grid; justify-items: start; gap: 12px; position: relative; }
+  .station .pin {
+    width: 18px; height: 18px; border-radius: 50%; background: var(--off-white);
+    border: 2px solid var(--off-black); transform: scale(0);
+    transition: transform .3s var(--ease-out), background .3s, border-color .3s;
+    transition-delay: calc(.35s + var(--s) * 180ms);
+    display: grid; place-items: center; font-size: 9px;
+  }
+  .route.is-in .station .pin { transform: scale(1); background: var(--coral); border-color: var(--coral); }
+  .station .name {
+    font-weight: 700; font-size: clamp(15px, 1.4vw, 20px); letter-spacing: -0.03em;
+    opacity: 0; transition: opacity .4s; transition-delay: calc(.45s + var(--s) * 180ms);
+  }
+  .route.is-in .station .name { opacity: 1; }
+  .station.lock .pin { background: var(--off-white); }
+  .station.lock .pin::after {
+    content: "🔒"; font-size: 11px; opacity: 0; transform: translateY(-4px);
+    transition: opacity .3s, transform .3s var(--ease-out); transition-delay: 2s;
+  }
+  .route.is-in .station.lock .pin { background: var(--off-black); border-color: var(--off-black); width: 24px; height: 24px; margin-top: -3px; }
+  .route.is-in .station.lock .pin::after { opacity: 1; transform: none; }
+  .station .etc { margin-left: 6px; vertical-align: 2px; color: var(--muted); opacity: 0; transition: opacity .4s 1.4s; }
+  .route.is-in .station .etc { opacity: 1; }
+  @media (max-width: 1023px) {
+    .route { grid-template-columns: 1fr; row-gap: 28px; }
+    .route-track { display: none; }
+    .stations { display: flex; gap: 28px; flex-wrap: wrap; }
+    .leg-label { margin-bottom: 14px; }
+  }
+
+  /* ───────── 스태킹 행 ───────── */
+  .stack { position: relative; padding: 0 var(--margin); }
+  .row {
+    position: sticky;
+    top: calc(var(--header-h) + var(--i) * var(--peek));
+    min-height: var(--row-h);
+    background: var(--off-white);
+    display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gutter);
+    padding: 30px 0 60px;
+  }
+  .row::before, .row::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; }
+  .row::before { background: var(--line); }
+  .row::after {
+    height: 2px; background: var(--coral);
+    transform-origin: left; transform: scaleX(var(--progress, 0));
+  }
+  .num {
+    grid-column: 1 / 3;
+    font-weight: 800; font-size: clamp(40px, 4.9vw, 70px); line-height: .8; letter-spacing: -0.03em;
+  }
+  .mid { grid-column: 3 / 8; display: flex; flex-direction: column; justify-content: space-between; gap: 40px; }
+  .title {
+    font-weight: 800; font-size: clamp(34px, 4.17vw, 60px); line-height: .9; letter-spacing: -0.045em;
+  }
+  .items { display: grid; gap: 14px; }
+  .list { font-size: clamp(16px, 1.25vw, 18px); line-height: 1.25; letter-spacing: -0.02em; }
+  .list li > span { display: flex; align-items: baseline; gap: 10px; }
+  .list .i { font: 500 10px/1 var(--font-mono); color: var(--muted); min-width: 18px; }
+  .side { grid-column: 9 / 13; display: flex; flex-direction: column; justify-content: space-between; gap: 28px; }
+  .desc { font-size: clamp(15px, 1.25vw, 18px); line-height: 1.3; letter-spacing: -0.02em; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { padding: 3px 7px; background: var(--chip); border-radius: 1px; }
+  .tag.link { background: var(--off-black); color: var(--off-white); }
+  .tag.hot { background: var(--coral); color: var(--off-white); }
+
+  @media (max-width: 1023px) {
+    .row { grid-template-columns: auto 1fr; column-gap: 16px; row-gap: 20px; padding: 22px 0 40px; }
+    .num { grid-column: 1; }
+    .mid { grid-column: 2; gap: 20px; }
+    .side { grid-column: 1 / -1; }
+  }
+
+  /* ───────── 3페이지 캐릭터 행 ───────── */
+  .quote {
+    font-weight: 700; font-size: clamp(18px, 1.7vw, 24px); line-height: 1.2; letter-spacing: -0.03em;
+  }
+  .gauge { display: grid; gap: 8px; }
+  .gauge-bar { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
+  .gauge-bar i {
+    height: 10px; background: var(--line);
+    transition: background .2s; transition-delay: calc(.6s + var(--g) * 60ms);
+  }
+  .is-in .gauge-bar i.on { background: var(--off-black); }
+  .gain { display: flex; justify-content: space-between; align-items: baseline; padding-top: 10px; border-top: 1px solid var(--line); }
+  .gain b { font-weight: 700; font-size: 18px; letter-spacing: -0.02em; }
+
+  /* ▼ 덜떨어진 놈: 비상벨 → 흔들림 → 수습 스탬프 */
+  .row.clumsy .num { color: var(--coral); }
+  .bell {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--coral);
+    margin-right: 6px; vertical-align: 1px;
+  }
+  .row.clumsy.is-in .bell { animation: bell .8s ease-out 1s 3; }
+  @keyframes bell { 0% { box-shadow: 0 0 0 0 rgba(217,119,87,.7); } 100% { box-shadow: 0 0 0 12px rgba(217,119,87,0); } }
+  .row.clumsy.is-in .title { animation: shake .5s ease-in-out 1.3s 1; }
+  @keyframes shake {
+    20% { transform: translateX(-6px) rotate(-.6deg); } 40% { transform: translateX(5px) rotate(.5deg); }
+    60% { transform: translateX(-3px); } 80% { transform: translateX(2px); }
+  }
+  .stamp {
+    display: inline-flex; justify-self: start; align-items: center; gap: 6px;
+    padding: 6px 10px; border: 1.5px solid var(--coral); color: var(--coral); border-radius: 2px;
+    transform: rotate(-4deg) scale(1.6); opacity: 0;
+    transition: transform .35s var(--ease-out), opacity .2s; transition-delay: 2.1s;
+  }
+  .row.clumsy.is-in .stamp { transform: rotate(-4deg) scale(1); opacity: 1; }
+
+  /* ───────── 3페이지 목표 2: 수식 띠 + 교통카드 ───────── */
+  .goal2 { padding: 180px var(--margin) 80px; display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gutter); row-gap: 56px; }
+  .goal2 .kicker { grid-column: 1 / -1; display: flex; gap: 24px; }
+  .goal2 .headline { grid-column: 1 / 9; font-weight: 800; font-size: clamp(34px, 4.6vw, 68px); line-height: .95; letter-spacing: -0.045em; }
+  .goal2 .lead { grid-column: 9 / 13; align-self: end; }
+
+  .equation {
+    grid-column: 1 / -1;
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: .2em .35em;
+    padding: 34px 0; border-top: 1px solid var(--off-black); border-bottom: 1px solid var(--off-black);
+    font-weight: 800; font-size: clamp(30px, 4.4vw, 64px); line-height: 1; letter-spacing: -0.045em;
+  }
+  .equation > * {
+    opacity: 0; transform: translateY(30%);
+    transition: opacity .45s var(--ease-io), transform .6s var(--ease-out);
+    transition-delay: calc(var(--e) * 220ms);
+  }
+  .equation.is-in > * { opacity: 1; transform: none; }
+  .equation .op { color: var(--muted); font-weight: 400; }
+  .equation .result {
+    color: var(--coral);
+    transform: scale(1.4) rotate(-2deg);
+    transition: opacity .2s, transform .45s var(--ease-out);
+    transition-delay: calc(var(--e) * 220ms);
+  }
+  .equation.is-in .result { transform: none; }
+
+  .tap { grid-column: 1 / -1; overflow-x: clip; padding: 40px 0; display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gutter); align-items: center; min-height: 300px; }
+  .reader {
+    grid-column: 7 / 11; justify-self: center; position: relative;
+    width: 180px; height: 240px; background: var(--dark); border-radius: 14px;
+    display: grid; justify-items: center; align-content: start; padding-top: 28px; gap: 16px;
+  }
+  .reader .led { width: 60px; height: 6px; border-radius: 3px; background: #3a3d3d; transition: background .2s, box-shadow .2s; transition-delay: 1.35s; }
+  .tap.is-in .reader .led { background: var(--coral); box-shadow: 0 0 16px var(--coral); }
+  .reader .pad { width: 120px; height: 120px; border-radius: 10px; border: 1.5px dashed rgba(249,244,235,.25); display: grid; place-items: center; color: rgba(249,244,235,.5); }
+  .reader .beep { color: var(--off-white); opacity: 0; transition: opacity .2s 1.4s; }
+  .tap.is-in .reader .beep { opacity: 1; }
+  .card {
+    position: absolute; left: 50%; top: 70px; width: 210px; height: 132px; margin-left: -105px;
+    background: var(--chip); border-radius: 10px; padding: 14px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    box-shadow: 0 18px 40px -18px rgba(0,0,0,.45);
+    transform: translate(120%, 140px) rotate(14deg); opacity: 0;
+    transition: transform 1.1s var(--ease-move), opacity .3s; transition-delay: .2s;
+  }
+  .tap.is-in .card { transform: translate(0, 0) rotate(-6deg); opacity: 1; }
+  .card .stripe { height: 4px; background: var(--coral); border-radius: 2px; }
+  .card b { font-weight: 800; font-size: 20px; letter-spacing: -0.03em; }
+  .tap-copy { grid-column: 1 / 6; display: grid; gap: 14px; }
+  .tap-copy .big { font-weight: 800; font-size: clamp(26px, 2.8vw, 40px); line-height: 1.05; letter-spacing: -0.04em; }
+
+  /* 달성 확인 기준 */
+  .checks { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); column-gap: var(--gutter); border-top: 1px solid var(--line); padding-top: 22px; }
+  .check { display: grid; gap: 10px; padding-right: 20px; }
+  .check p { font-size: 15px; line-height: 1.4; letter-spacing: -0.02em; }
+  .box { display: inline-grid; place-items: center; width: 14px; height: 14px; border: 1.5px solid var(--off-black); margin-right: 6px; vertical-align: -3px; }
+
+  @media (max-width: 1023px) {
+    .goal2 { padding-top: 100px; row-gap: 36px; }
+    .goal2 .headline, .goal2 .lead { grid-column: 1 / -1; }
+    .tap { grid-template-columns: 1fr; row-gap: 40px; }
+    .reader, .tap-copy { grid-column: 1; }
+    .checks { grid-template-columns: 1fr 1fr; row-gap: 22px; }
+  }
+
+  /* ───────── 역 사이 / 끝 ───────── */
+  .next-stop {
+    margin: 140px var(--margin) 0; padding: 28px 0 120px;
+    border-top: 2px solid var(--off-black);
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;
+  }
+  .next-stop .q { font-weight: 800; font-size: clamp(26px, 3vw, 44px); letter-spacing: -0.04em; line-height: 1; }
+  .next-stop .arrow { display: inline-block; animation: nudge 1.6s var(--ease-io) infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
+    .reveal > span, .fade, .equation > * { transform: none !important; opacity: 1 !important; }
+    .row::after { transform: scaleX(1); }
+  }
+</style>
+</head>
+<body>
+
+  <!-- 고정 UI -->
+  <header class="header">
+    <span class="badge-num" id="badgeNum">02</span>
+    <div class="tagline mono"><span id="tagline">이번 역은 배우고 싶은 것입니다</span></div>
+    <div class="burger" aria-label="메뉴"><i></i><i></i><i></i></div>
+  </header>
+
+  <nav class="cta">
+    <button class="cta-main mono" id="ctaPrev"><span class="sq">🚃</span><span class="txt">클로드코드 열차</span></button>
+    <button class="cta-sub mono" id="ctaNext"><span id="ctaNextLabel">Next station</span><span>( <span class="arrow">→</span> )</span></button>
+  </nav>
+
+  <div class="route-ind mono" aria-label="노선도">
+    <span class="lbl" id="indLabel">02 / 08</span>
+  </div>
+  <div class="cursor-chip mono" id="cursorChip"></div>
+
+  <main>
+  <!-- ═════════════ 페이지 2 ═════════════ -->
+  <section class="page" id="p2" data-page="2">
+    <div class="intro js-reveal" data-tagline="이번 역은 배우고 싶은 것입니다">
+      <div class="kicker mono fade"><span>[ 02 / 08 ]</span><span>[ 노선도 ]</span></div>
+      <h1 class="page-title">
+        <span class="reveal"><span>AI를 통해</span></span>
+        <span class="reveal"><span style="--d:1">배우고 싶은 것</span></span>
+      </h1>
+      <p class="headline fade" style="--d:4">기획부터 배포와 보안까지,<br />혼자서도 한 바퀴.</p>
+      <p class="lead fade" style="--d:5">AI로 뭘 할 수 있는지는 많이 들었다. 알고 싶은 건 내 일에 어떻게 써먹는지다. 기획·마케팅·디자인 같은 스킬부터 에이전트, 그리고 만들고 내보내고 지키는 것까지.</p>
+
+      <div class="route js-reveal" aria-label="구간 3개, 정차역 7개">
+        <div class="route-track"></div>
+        <div class="leg">
+          <div class="leg-label mono"><b>구간 1</b><span>스킬 적용</span></div>
+          <div class="stations" style="--n:3">
+            <div class="station" style="--s:0"><span class="pin"></span><span class="name">기획</span></div>
+            <div class="station" style="--s:1"><span class="pin"></span><span class="name">마케팅</span></div>
+            <div class="station" style="--s:2"><span class="pin"></span><span class="name">디자인<span class="etc mono">등</span></span></div>
+          </div>
+        </div>
+        <div class="leg">
+          <div class="leg-label mono"><b>구간 2</b><span>에이전트</span></div>
+          <div class="stations" style="--n:1">
+            <div class="station" style="--s:3"><span class="pin"></span><span class="name">에이전트</span></div>
+          </div>
+        </div>
+        <div class="leg">
+          <div class="leg-label mono"><b>구간 3</b><span>웹·앱</span></div>
+          <div class="stations" style="--n:3">
+            <div class="station" style="--s:4"><span class="pin"></span><span class="name">만들기</span></div>
+            <div class="station" style="--s:5"><span class="pin"></span><span class="name">배포</span></div>
+            <div class="station lock" style="--s:6"><span class="pin"></span><span class="name">보안</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stack" id="stack2" data-tagline="아는 것 말고, 써먹는 법"></div>
+  </section>
+
+  <!-- 역 사이 -->
+  <div class="next-stop js-reveal" data-tagline="다음 역은 이루고 싶은 목표입니다">
+    <p class="q fade">그래서, 어디까지 갈 건데? <span class="arrow">↓</span></p>
+    <span class="mono fade" style="--d:1">[ 다음 역 · 03 ]</span>
+  </div>
+
+  <!-- ═════════════ 페이지 3 ═════════════ -->
+  <section class="page" id="p3" data-page="3">
+    <div class="intro js-reveal" data-tagline="이번 역은 이루고 싶은 목표입니다">
+      <div class="kicker mono fade"><span>[ 03 / 08 ]</span><span>[ 목표 1 · 이 과정 안에서 ]</span></div>
+      <h1 class="page-title">
+        <span class="reveal"><span>이 과정에서</span></span>
+        <span class="reveal"><span style="--d:1">이루고 싶은 목표</span></span>
+      </h1>
+      <p class="headline fade" style="--d:4">뛰어난 놈, 동등한 놈,<br />덜떨어진 놈.</p>
+      <p class="lead fade" style="--d:5">영화 제목처럼, 실력이 다른 에이전트 셋을 만든다. 나를 기준으로 위, 같음, 아래. 셋 다 쓸모가 다르다.</p>
+    </div>
+
+    <div class="stack" id="stack3" data-tagline="동승자 셋을 소개합니다"></div>
+
+    <div class="goal2" data-tagline="어느 노선에서도 찍히는 교통카드">
+      <div class="kicker mono js-reveal"><span class="fade">[ 목표 2 · 이 과정 밖에서 ]</span></div>
+      <h2 class="headline js-reveal">
+        <span class="reveal"><span>어느 회사에 가도 통하는</span></span>
+        <span class="reveal"><span style="--d:1">AI 활용 능력</span></span>
+      </h2>
+      <p class="lead js-reveal"><span class="fade" style="display:block">뛰어난 놈에게 배우고, 동등한 놈과 함께 일하고, 덜떨어진 놈을 감독한다. 이 셋을 이 과정에서만 쓰는 게 아니라, 회사가 바뀌어도 무리 없이 가져가는 것이 목표다.</span></p>
+
+      <div class="equation js-reveal" aria-label="배우기 더하기 협업하기 더하기 수습하기는 AI 활용 능력">
+        <span style="--e:0">배우기</span><span class="op" style="--e:1">+</span>
+        <span style="--e:2">협업하기</span><span class="op" style="--e:3">+</span>
+        <span style="--e:4">수습하기</span><span class="op" style="--e:5">=</span>
+        <span class="result" style="--e:6">AI 활용 능력</span>
+      </div>
+
+      <div class="tap js-reveal">
+        <div class="tap-copy">
+          <span class="mono fade">[ 교통카드 ]</span>
+          <p class="big fade" style="--d:1">어느 노선에서도 찍히는 카드처럼.<br />어느 회사에서도, 무리 없이.</p>
+        </div>
+        <div class="reader" aria-hidden="true">
+          <span class="led"></span>
+          <span class="pad mono">Tap</span>
+          <span class="beep mono">삑 · 승차</span>
+          <div class="card">
+            <div class="stripe"></div>
+            <b>AI 활용 능력</b>
+            <span class="mono">Any line · Any company</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="checks js-reveal">
+        <div class="check fade"><span class="mono">[ ▲ 뛰어난 놈 ]</span><p><span class="box"></span>내가 못 풀던 문제를 하나 물어봐서 해결했다.</p></div>
+        <div class="check fade" style="--d:1"><span class="mono">[ ＝ 동등한 놈 ]</span><p><span class="box"></span>한 작업을 나눠 맡아 같이 끝냈다.</p></div>
+        <div class="check fade" style="--d:2"><span class="mono">[ ▼ 덜떨어진 놈 ]</span><p><span class="box"></span>에이전트가 낸 사고를 한 번 이상 직접 수습했다.</p></div>
+        <div class="check fade" style="--d:3"><span class="mono">[ AI 활용 능력 ]</span><p><span class="box"></span>세 구간마다 결과물이 하나 이상 있고, 하나는 회사 업무에 써 봤다.</p></div>
+      </div>
+    </div>
+
+    <div class="next-stop js-reveal" data-tagline="다음 역은 공사 중입니다">
+      <p class="q fade">그럼, 뭘 만들 건데? <span class="arrow">→</span></p>
+      <span class="mono fade" style="--d:1">[ 다음 역 · 04 · 공사 중 ]</span>
+    </div>
+  </section>
+  </main>
+
+<script type="module">
+  // ── 콘텐츠 (PRD v3.2) ──
+  const LEGS = [
+    { num: "01", title: "스킬 적용 방법", kicker: "[ 아는 것을 AI로 결과물까지 ]", chip: "기획 → 마케팅 → 디자인",
+      items: ["기획", "마케팅", "디자인", "등 (열린 목록)"],
+      desc: "기획서, 홍보 카피, 화면 목업처럼 각 스킬을 AI와 함께 실제 결과물로 만드는 법. 이 PRD가 기획의 첫 연습이다.",
+      tags: [] },
+    { num: "02", title: "에이전트 구축", kicker: "[ 내 일을 나눠 맡을 AI 만들기 ]", chip: "→ 03 놈놈놈",
+      items: ["역할 설계", "실력 조절", "굴리고 감독하기"],
+      desc: "역할과 실력이 다른 에이전트를 설계하고 굴리는 법. 다음 역에서 셋으로 구체화된다.",
+      tags: [{ t: "→ 03 페이지", link: true }] },
+    { num: "03", title: "웹·앱 만들기, 배포, 보안", kicker: "[ 만들고, 내보내고, 지키기 ]", chip: "만들기 → 배포 → 🔒",
+      items: ["만들기", "배포", "보안 (인증 · 키 관리 · 취약점 점검)"],
+      desc: "웹사이트와 앱을 만들어 실제로 배포하고, 배포한 것을 안전하게 지키는 법.",
+      tags: [{ t: "→ 04~07 페이지", link: true }, { t: "NEW · 보안", hot: true }] },
+  ];
+
+  const MATES = [
+    { lv: "▲", title: "나보다 뛰어난 놈", role: "[ 스승 · 해결사 ]", chip: "기관사",
+      quote: "“막히면 묻고, 모르면 배운다.”",
+      desc: "나보다 잘 아는 에이전트. 도움을 요청하거나 배울 수 있는 상대.",
+      level: 9, gain: "배우는 능력" },
+    { lv: "＝", title: "나와 동등한 놈", role: "[ 동료 · 전우 ]", chip: "옆자리 승객",
+      quote: "“같은 처지, 같은 고민. 동병상련.”",
+      desc: "나와 비슷한 수준의 에이전트. 같이 헤매고 같이 답을 찾는 상대. 혼자보다 둘이 낫다.",
+      level: 5, gain: "협업하는 능력" },
+    { lv: "▼", title: "나보다 덜떨어진 놈", role: "[ 사고뭉치 · 훈련 상대 ]", chip: "비상벨 누르는 놈",
+      quote: "“사고는 네가 쳐라, 수습은 내가 한다.”",
+      desc: "일부러 부족하게 만든 에이전트. 사건 사고를 일으켰을 때 내가 해결해 나가며 대처 능력을 키운다.",
+      level: 2, gain: "감독하고 수습하는 능력", clumsy: true },
+  ];
+
+  const R = (t, d = 0) => `<span class="reveal"><span style="--d:${d}">${t}</span></span>`;
+
+  document.getElementById("stack2").innerHTML = LEGS.map((r, i) => `
+    <article class="row js-reveal" style="--i:${i}" data-chip="${r.chip}">
+      <div class="num">${R(r.num)}</div>
+      <div class="mid">
+        <h2 class="title">${R(r.title, 1)}</h2>
+        <div class="items">
+          <div class="mono">${R(r.kicker, 2)}</div>
+          <ul class="list">
+            ${r.items.map((t, j) => `<li class="reveal"><span style="--d:${j + 3}"><span class="i">${String(j + 1).padStart(2, "0")}</span>${t}</span></li>`).join("")}
+          </ul>
+        </div>
+      </div>
+      <div class="side">
+        <p class="desc">${R(r.desc, 2)}</p>
+        <div class="tags">${r.tags.map((g, j) => `<span class="tag mono fade ${g.link ? "link" : ""} ${g.hot ? "hot" : ""}" style="--d:${j + 6}">${g.t}</span>`).join("")}</div>
+      </div>
+    </article>`).join("");
+
+  document.getElementById("stack3").innerHTML = MATES.map((m, i) => `
+    <article class="row js-reveal ${m.clumsy ? "clumsy" : ""}" style="--i:${i}" data-chip="${m.chip}">
+      <div class="num">${R(m.lv)}</div>
+      <div class="mid">
+        <h2 class="title">${R(m.title, 1)}</h2>
+        <div class="items">
+          <div class="mono">${R((m.clumsy ? '<span class="bell"></span>' : "") + m.role, 2)}</div>
+          <p class="quote">${R(m.quote, 3)}</p>
+          ${m.clumsy ? `<span class="stamp mono">[ 수습 완료 ✓ ]</span>` : ""}
+        </div>
+      </div>
+      <div class="side">
+        <p class="desc">${R(m.desc, 2)}</p>
+        <div class="gauge fade" style="--d:4">
+          <div class="mono" style="display:flex;justify-content:space-between"><span>실력 · 나 대비</span><span>LV ${m.level} / 10</span></div>
+          <div class="gauge-bar">${Array.from({ length: 10 }, (_, g) => `<i class="${g < m.level ? "on" : ""}" style="--g:${g}"></i>`).join("")}</div>
+          <div class="gain"><span class="mono">얻는 능력</span><b>${m.gain}</b></div>
+          ${m.clumsy ? `<span class="tag mono hot" style="justify-self:start">이게 핵심</span>` : ""}
+        </div>
+      </div>
+    </article>`).join("");
+
+  // ── 진입 리빌 ──
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add("is-in"); io.unobserve(e.target); }
+  }), { threshold: 0.2 });
+  document.querySelectorAll(".js-reveal").forEach(el => io.observe(el));
+
+  // ── 노선도 인디케이터 ──
+  const ind = document.querySelector(".route-ind");
+  for (let n = 1; n <= 8; n++) {
+    if (n > 1) ind.insertAdjacentHTML("beforeend", `<span class="seg"></span>`);
+    ind.insertAdjacentHTML("beforeend", `<span class="dot" data-n="${n}" title="${String(n).padStart(2, "0")}"></span>`);
+  }
+  const dots = [...ind.querySelectorAll(".dot")];
+
+  // ── 스크롤: 구분선 진행도 · 태그라인 · 현재 역 ──
+  const rows = [...document.querySelectorAll(".row")];
+  const rootCss = getComputedStyle(document.documentElement);
+  const taggables = [...document.querySelectorAll("[data-tagline]")];
+  const pages = [...document.querySelectorAll("[data-page]")];
+  const tag = document.getElementById("tagline");
+  const badge = document.getElementById("badgeNum");
+  const indLabel = document.getElementById("indLabel");
+  let curTag = tag.textContent, curPage = 0;
+
+  function swapTagline(text) {
+    if (text === curTag) return;
+    curTag = text;
+    tag.classList.add("out");
+    setTimeout(() => {
+      tag.textContent = text;
+      tag.classList.remove("out"); tag.classList.add("in-start");
+      requestAnimationFrame(() => requestAnimationFrame(() => tag.classList.remove("in-start")));
+    }, 300);
+  }
+
+  function update() {
+    const vh = innerHeight;
+    const headerH = parseFloat(rootCss.getPropertyValue("--header-h"));
+    const peek = parseFloat(rootCss.getPropertyValue("--peek"));
+    rows.forEach(row => {
+      const i = +row.style.getPropertyValue("--i");
+      const stickTop = headerH + i * peek;
+      const p = Math.min(1, Math.max(0, (vh - row.getBoundingClientRect().top) / (vh - stickTop)));
+      row.style.setProperty("--progress", p.toFixed(3));
+    });
+
+    const mid = vh * 0.4;
+    const t = taggables.filter(s => s.getBoundingClientRect().top < mid).pop() || taggables[0];
+    swapTagline(t.dataset.tagline);
+
+    const pg = +((pages.filter(s => s.getBoundingClientRect().top < mid).pop() || pages[0]).dataset.page);
+    if (pg !== curPage) {
+      curPage = pg;
+      const n2 = String(pg).padStart(2, "0");
+      badge.textContent = n2;
+      indLabel.textContent = `${n2} / 08`;
+      dots.forEach(d => {
+        const n = +d.dataset.n;
+        d.classList.toggle("current", n === pg);
+        d.classList.toggle("passed", n < pg);
+      });
+      document.getElementById("ctaNextLabel").textContent = pg === 2 ? "Next · 03 목표" : "Next · 04 공사 중";
+    }
+  }
+
+  let ticking = false;
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { update(); ticking = false; });
+  };
+  addEventListener("scroll", onScroll, { passive: true });
+  addEventListener("resize", onScroll);
+  update();
+
+  // ── CTA ──
+  let lenis = null;
+  const go = el => lenis ? lenis.scrollTo(el, { duration: 1.4 }) : el.scrollIntoView({ behavior: "smooth" });
+  document.getElementById("ctaNext").addEventListener("click", () => {
+    go(curPage === 2 ? document.getElementById("p3") : document.querySelector("#p3 .next-stop"));
+  });
+  document.getElementById("ctaPrev").addEventListener("click", () => go(document.getElementById("p2")));
+
+  // ── 키보드: ← → 로 역 이동 ──
+  addEventListener("keydown", e => {
+    if (e.key === "ArrowRight") go(document.getElementById("p3"));
+    if (e.key === "ArrowLeft") go(document.getElementById("p2"));
+  });
+
+  // ── 커서 칩 (터치 기기에선 끔) ──
+  const chip = document.getElementById("cursorChip");
+  if (matchMedia("(hover: hover)").matches) {
+    let cx = 0, cy = 0, tx = 0, ty = 0;
+    addEventListener("pointermove", e => {
+      tx = e.clientX; ty = e.clientY;
+      const row = e.target.closest?.(".row");
+      chip.classList.toggle("show", !!row);
+      if (row) chip.textContent = row.dataset.chip;
+    });
+    (function follow() {
+      cx += (tx - cx) * 0.18; cy += (ty - cy) * 0.18;
+      chip.style.transform = `translate(${cx}px, ${cy}px)`;
+      requestAnimationFrame(follow);
+    })();
+  }
+
+  // ── Lenis 부드러운 스크롤 ──
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    try {
+      const { default: Lenis } = await import("https://cdn.jsdelivr.net/npm/lenis@1.1.13/+esm");
+      lenis = new Lenis({ lerp: 0.1 });
+      lenis.on("scroll", onScroll);
+      (function raf(t) { lenis.raf(t); requestAnimationFrame(raf); })();
+    } catch { /* 네이티브 스크롤 */ }
+  }
+</script>
+</body>
+</html>

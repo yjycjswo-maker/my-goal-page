@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>내가 이 수업을 듣게 된 이유</title>
+<!-- 원본: Suisse BP Intl(상용) + Sometype. 대체: Pretendard + Sometype Mono -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sometype+Mono:wght@400;500&display=swap" />
+<style>
+  :root {
+    /* 컬러: 원본 값 그대로 (무채색만) */
+    --off-white: #f9f4eb;
+    --off-black: #010101;
+    --dark:      #1a1c1c;
+    --line:      rgba(1, 1, 1, 0.14);
+
+    --font-sans: "Pretendard", Helvetica, Arial, sans-serif;
+    --font-mono: "Sometype Mono", ui-monospace, monospace;
+
+    /* 그리드: 원본 변수 */
+    --margin: 2.5rem;
+    --gutter: 0.625rem;
+
+    /* 스택 */
+    --header-h: 80px;
+    --peek: 60px;
+    --row-h: 360px;
+
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-io:  cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  @media (max-width: 767px) {
+    :root { --margin: 1rem; --peek: 44px; --row-h: 375px; --header-h: 72px; }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* 종이(off-white)는 body 가 그림. html 은 구멍으로 보일 뒤 배경:
+     단독으로 열면 검정, 캐러셀 창·썸네일 촬영에서는 투명(뒤의 장면이 비침) */
+  html { background: var(--off-black); overflow-x: clip; }
+  /* 투명 그라디언트: html 배경이 완전히 비면 body 의 종이색이 화면 전체로 번져(배경 전파) 구멍이 막히므로.
+     캐러셀 창에서는 뒤의 장면(클로드 로고)이 구멍으로 보입니다 */
+  html.is-embedded { background: linear-gradient(transparent, transparent); }
+  body { min-height: 100vh; }
+  body {
+    background: var(--off-white); color: var(--off-black);
+    font-family: var(--font-sans); -webkit-font-smoothing: antialiased;
+    word-break: keep-all;
+  }
+  ul { list-style: none; }
+
+  .mono {
+    font-family: var(--font-mono); font-size: 10px; line-height: 18px;
+    font-weight: 500; letter-spacing: -0.2px; text-transform: uppercase;
+  }
+
+  /* 페이지 번호: 캐러셀 1번 카드의 큰 숫자와 같은 자리·비율 (카드 500×375 에서 64px, 왼쪽 28px)
+     1008×756 창 기준 약 159px. 스크롤하면 인트로와 함께 위로 올라가 사라진다 */
+  .page-num {
+    position: absolute; z-index: 40;
+    left: var(--margin); margin-left: -0.05em; top: 4.5vh;
+    font-weight: 700; line-height: .8; letter-spacing: -0.03em;
+    font-size: min(21vh, 11vw);
+    pointer-events: none;
+    /* 뚫린 숫자: 글자 자체는 그리지 않고, 이 자리만큼 페이지(body)에 구멍을 냅니다 (아래 스크립트).
+       구멍으로 페이지 뒤의 배경(캐러셀 장면)이 그대로 보입니다 */
+    color: transparent;
+  }
+
+  /* ───────── 인트로 문단 ───────── */
+  .intro { padding: 200px var(--margin) 120px; }
+  .intro p {
+    max-width: 580px;
+    font-size: clamp(18px, 1.6vw, 24px); line-height: 1.3; letter-spacing: -0.02em;
+  }
+
+
+  /* ───────── 짤 (PRD 페이지 1: 제목이 질문, 이미지가 답, 캡션이 마무리) ───────── */
+  .figure { position: relative; padding: 30px var(--margin) 0; }
+  .figure-line { position: absolute; left: var(--margin); right: var(--margin); top: 0; height: 1px; background: var(--line); }
+  .figure-line::after {
+    content: ""; position: absolute; inset: 0; background: var(--off-black);
+    transform-origin: left center; transform: scaleX(var(--progress, 0));
+  }
+  .figure-head { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 30px; }
+  .shot {
+    width: min(66%, 1008px); margin: 0 auto; aspect-ratio: 1008 / 744;
+    background: var(--dark); overflow: hidden;
+    clip-path: inset(100% 0 0 0); transition: clip-path 1.2s var(--ease-out);
+  }
+  .shot img { display: block; width: 100%; height: 100%; object-fit: cover; scale: 1.08; transition: scale 1.6s var(--ease-out); }
+  .figure.is-in .shot { clip-path: inset(0 0 0 0); }
+  .figure.is-in .shot img { scale: 1; }
+  .answer { width: min(66%, 1008px); margin: 40px auto 0; }
+  .answer h2 { font-weight: 700; line-height: .95; letter-spacing: -0.04em; font-size: clamp(30px, 3.6vw, 52px); }
+  .answer .mono { margin-top: 24px; }
+
+  @media (max-width: 767px) {
+    .shot, .answer { width: 100%; }
+    .figure-head { flex-direction: column; gap: 0; }
+  }
+
+  /* 한글 글자 윗부분이 마스크에 잘리지 않도록 위아래 여유 (margin 으로 상쇄해 배치는 그대로) */
+  .reveal { overflow: hidden; display: block; padding: .15em 0 .08em; margin-top: -.15em; }
+  .title .reveal, .answer h2 .reveal { padding-top: .25em; margin-top: -.25em; }
+  .reveal > span {
+    display: block; transform: translateY(110%);
+    transition: transform .9s var(--ease-out);
+    transition-delay: calc(var(--d, 0) * 70ms);
+  }
+  .is-in .reveal > span { transform: none; }
+
+  /* 사진 아래 여백: 스크롤이 사진 바로 아래에서 끝나도록 (아래 글을 지워 40vh → 여백만) */
+  .end { height: 60px; }
+
+  /* 스크롤바가 생기면 폭이 줄어 카드 스크린샷과 배치가 어긋나므로 숨김 (스크롤은 그대로 됨) */
+  html.is-embedded { scrollbar-width: none; }
+  html.is-embedded::-webkit-scrollbar { display: none; }
+  /* 썸네일 촬영: 리빌이 끝난 첫 화면 상태로 고정 */
+  .is-shot .reveal > span { transform: none !important; transition: none !important; }
+  .is-shot .shot { clip-path: none !important; transition: none !important; }
+  .is-shot .shot img { scale: 1 !important; }
+  .is-instant .reveal > span, .is-instant .shot, .is-instant .shot img { transition: none !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal > span { transform: none; transition: none; }
+    .figure-line::after { transform: scaleX(1); }
+    .shot { clip-path: none; transition: none; }
+    .shot img { scale: 1; transition: none; }
+  }
+</style>
+<link rel="stylesheet" href="page.css" />
+</head>
+<body>
+  <script>
+    // 캐러셀 창(iframe) 안에서 열렸는지, 카드 썸네일 촬영용(?shot)인지 표시
+    if (window.self !== window.top || location.search.includes("embed")) document.documentElement.classList.add("is-embedded");
+    if (location.search.includes("shot")) document.documentElement.classList.add("is-shot");
+    // ?holebg=000 / ?holebg=fff: 썸네일 촬영용. 구멍 뒤 색을 바꿔 두 번 찍어 투명도를 계산 (scripts/shoot-page.py)
+    const holeBg = new URLSearchParams(location.search).get("holebg");
+    if (holeBg) document.documentElement.style.background = "#" + holeBg;
+    // ?instant: 캐러셀 창이 열릴 때 첫 화면을 카드 스크린샷과 같은 상태(리빌 끝)로 바로 보여줌.
+    // 첫 화면 밖의 행은 스크롤하면 평소처럼 리빌됩니다.
+    if (location.search.includes("instant")) {
+      document.documentElement.classList.add("is-instant");
+      setTimeout(() => document.documentElement.classList.remove("is-instant"), 600);
+    }
+  </script>
+
+  <div class="page-num" aria-hidden="true">01</div>
+
+  <main>
+    <section class="intro js-reveal">
+      <h1 class="intro-title">
+        <span class="reveal"><span>내가 이 수업을 듣게 된 이유</span></span>
+      </h1>
+    </section>
+
+    <section class="figure js-reveal" id="figure">
+      <div class="figure-line"></div>
+      <div class="shot"><img src="../images/page-01-meme.webp" alt="어서 타, 라고 말하는 클로드코드" /></div>
+    </section>
+    <div class="end"></div>
+  </main>
+
+<script type="module">
+  // 캐러셀 창 안에서는 ESC 가 부모까지 가지 않으므로 메시지로 창 닫기를 요청
+  if (window.self !== window.top) {
+    addEventListener("keydown", e => {
+      if (e.key === "Escape") parent.postMessage({ type: "page-window:close" }, location.origin);
+    });
+  }
+
+  // 새로고침하면 맨 위에서 시작 (진입 리빌을 처음부터 보이게)
+  history.scrollRestoration = "manual";
+  scrollTo(0, 0);
+
+  // 페이지 번호 모양으로 body(종이)에 구멍 내기: 숫자를 캔버스에 그려 마스크로 뺌.
+  const numEl = document.querySelector(".page-num");
+  let hole = null; // { x, y } 문서 기준 위치 (번호와 함께 스크롤됨)
+  function placeHole() {
+    if (!hole) return;
+    const pos = `0 0, ${hole.x}px ${hole.y}px`;
+    document.body.style.setProperty("-webkit-mask-position", pos);
+    document.body.style.setProperty("mask-position", pos);
+  }
+  function punch() {
+    const cs = getComputedStyle(numEl);
+    const size = parseFloat(cs.fontSize), lh = parseFloat(cs.lineHeight) || size * .8;
+    const dpr = Math.max(2, devicePixelRatio);
+    const c = document.createElement("canvas"), ctx = c.getContext("2d");
+    const font = `${cs.fontWeight} ${size}px ${cs.fontFamily}`;
+    ctx.font = font;
+    const m = ctx.measureText(numEl.textContent);
+    const w = Math.ceil(m.width + size * .2), h = Math.ceil(lh + size * .4);
+    c.width = w * dpr; c.height = h * dpr;
+    ctx.scale(dpr, dpr);
+    ctx.font = font; ctx.letterSpacing = cs.letterSpacing; ctx.textBaseline = "alphabetic";
+    const A = m.fontBoundingBoxAscent, D = m.fontBoundingBoxDescent;
+    const pad = size * .2; // 위쪽 여유 (캔버스 안)
+    const baseline = pad + (lh - (A + D)) / 2 + A;
+    ctx.fillStyle = "#000"; ctx.fillText(numEl.textContent, 0, baseline);
+    const r = numEl.getBoundingClientRect();
+    hole = { x: r.left + scrollX, y: r.top + scrollY - pad };
+    const url = c.toDataURL(), b = document.body.style;
+    b.setProperty("-webkit-mask-image", `linear-gradient(#000,#000), url(${url})`);
+    b.setProperty("mask-image", `linear-gradient(#000,#000), url(${url})`);
+    b.setProperty("-webkit-mask-repeat", "no-repeat"); b.setProperty("mask-repeat", "no-repeat");
+    b.setProperty("-webkit-mask-size", `100% 100%, ${w}px ${h}px`); b.setProperty("mask-size", `100% 100%, ${w}px ${h}px`);
+    b.setProperty("-webkit-mask-composite", "xor"); b.setProperty("mask-composite", "exclude");
+    placeHole();
+  }
+  document.fonts.ready.then(punch);
+  addEventListener("resize", punch);
+
+  // 진입 리빌
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add("is-in"); io.unobserve(e.target); }
+  }), { threshold: 0.25 });
+  document.querySelectorAll(".js-reveal").forEach(el => io.observe(el));
+
+  // 구분선 진행도
+  const figure = document.getElementById("figure");
+  function update() {
+    const vh = innerHeight;
+    const p = Math.min(1, Math.max(0, (vh - figure.getBoundingClientRect().top) / (vh * 0.6)));
+    figure.style.setProperty("--progress", p.toFixed(3));
+  }
+
+  let ticking = false;
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { update(); ticking = false; });
+  };
+  addEventListener("scroll", onScroll, { passive: true });
+  addEventListener("resize", onScroll);
+  update();
+
+  // Lenis 부드러운 스크롤 (원본 사이트와 동일)
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    try {
+      const { default: Lenis } = await import("https://cdn.jsdelivr.net/npm/lenis@1.1.13/+esm");
+      const lenis = new Lenis({ lerp: 0.1 });
+      lenis.on("scroll", onScroll);
+      (function raf(t) { lenis.raf(t); requestAnimationFrame(raf); })();
+    } catch { /* 네이티브 스크롤 */ }
+  }
+</script>
+</body>
+</html>

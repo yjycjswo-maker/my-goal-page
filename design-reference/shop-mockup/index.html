@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OUTFIT ARCHIVE — 편집샵 시안</title>
+<style>
+  :root {
+    --paper: #f6f3ec;
+    --ink: #1b1a17;
+    --mute: #7b776d;
+    --line: rgba(27, 26, 23, .16);
+    --accent: #7a1f1f;
+    --serif: "Times New Roman", Georgia, "Apple SD Gothic Neo", serif;
+    --sans: "Helvetica Neue", Helvetica, "Apple SD Gothic Neo", sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--sans); }
+  a { color: inherit; text-decoration: none; }
+  .wrap { width: 1440px; margin: 0 auto; }
+
+  /* 상단 띠 */
+  .notice { border-bottom: 1px solid var(--line); text-align: center; font-size: 11px; letter-spacing: .18em; padding: 9px 0; color: var(--mute); }
+
+  /* 헤더 */
+  header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 26px 48px; border-bottom: 1px solid var(--ink); }
+  nav { display: flex; gap: 28px; font-size: 12px; letter-spacing: .14em; }
+  nav.right { justify-content: flex-end; }
+  .logo { font-family: var(--serif); font-size: 38px; letter-spacing: .02em; text-align: center; line-height: 1; }
+  .logo small { display: block; font-family: var(--sans); font-size: 10px; letter-spacing: .4em; color: var(--mute); margin-top: 6px; }
+
+  /* 히어로: 룩 하나를 도감처럼 */
+  .hero { display: grid; grid-template-columns: 360px 1fr 360px; border-bottom: 1px solid var(--line); min-height: 760px; }
+  .hero-l, .hero-r { padding: 56px 48px; display: flex; flex-direction: column; }
+  .hero-l { border-right: 1px solid var(--line); }
+  .hero-r { border-left: 1px solid var(--line); }
+  .eyebrow { font-size: 11px; letter-spacing: .24em; color: var(--mute); }
+  .hero h1 { font-family: var(--serif); font-weight: 400; font-size: 64px; line-height: .98; letter-spacing: -0.02em; margin: 22px 0 26px; }
+  .hero h1 em { font-style: italic; }
+  .hero p { font-size: 14px; line-height: 1.7; color: #3d3a34; }
+  .hero-l .foot { margin-top: auto; font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--mute); }
+  .hero-img { display: flex; align-items: center; justify-content: center; background: #fff; }
+  .hero-img img { width: 100%; max-width: 720px; display: block; clip-path: inset(6px 0 0 0); } /* 원본 그림 위 검은 선 가리기 */
+  .items { list-style: none; margin-top: 24px; border-top: 1px solid var(--ink); }
+  .items li { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .items .n { font-family: var(--serif); font-style: italic; color: var(--mute); }
+  .items b { display: block; font-size: 11px; letter-spacing: .16em; margin-bottom: 4px; }
+  .items .price { font-variant-numeric: tabular-nums; }
+  .btn { margin-top: auto; display: block; text-align: center; background: var(--ink); color: var(--paper); font-size: 12px; letter-spacing: .24em; padding: 18px 0; }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--ink); margin-top: 10px; }
+
+  /* 섹션 머리 */
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; padding: 64px 48px 28px; }
+  .sec-head h2 { font-family: var(--serif); font-weight: 400; font-size: 44px; letter-spacing: -0.01em; }
+  .sec-head h2 em { font-style: italic; }
+  .tabs { display: flex; gap: 22px; font-size: 12px; letter-spacing: .14em; color: var(--mute); }
+  .tabs .on { color: var(--ink); border-bottom: 1px solid var(--ink); padding-bottom: 3px; }
+
+  /* 룩북 그리드 */
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); border-left: 1px solid var(--line); margin: 0 48px; }
+  .card { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 18px 18px 22px; }
+  .card .img { aspect-ratio: 4 / 5; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .card img { width: 100%; height: 100%; object-fit: contain; }
+  .card .meta { display: flex; justify-content: space-between; margin-top: 16px; font-size: 11px; letter-spacing: .16em; color: var(--mute); }
+  .card h3 { font-family: var(--serif); font-weight: 400; font-size: 22px; margin-top: 8px; }
+  .card .brands { font-size: 12px; color: #4b4840; margin-top: 6px; line-height: 1.5; }
+
+  /* 브랜드 띠 */
+  .brandbar { margin: 72px 0 0; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 26px 48px; display: flex; justify-content: space-between; align-items: center; font-size: 22px; }
+  .brandbar span:nth-child(odd) { font-family: var(--serif); font-style: italic; }
+  .brandbar span:nth-child(even) { letter-spacing: .16em; font-size: 16px; }
+
+  /* 저널 + 푸터 */
+  .journal { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin: 0 48px; border-left: 1px solid var(--line); }
+  .journal article { border-right: 1px solid var(--line); padding: 36px 36px 40px; display: grid; grid-template-columns: 180px 1fr; gap: 28px; align-items: center; }
+  .journal .thumb { aspect-ratio: 3 / 4; background: #fff; overflow: hidden; }
+  .journal .thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .journal h4 { font-family: var(--serif); font-weight: 400; font-size: 28px; line-height: 1.15; margin: 10px 0 12px; }
+  .journal p { font-size: 13px; line-height: 1.7; color: #4b4840; }
+  footer { margin-top: 72px; border-top: 1px solid var(--ink); padding: 32px 48px 40px; display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .14em; color: var(--mute); }
+  footer .logo { font-size: 22px; text-align: left; color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="notice">FREE SHIPPING OVER ₩100,000 &nbsp;·&nbsp; NEW LOOKS EVERY FRIDAY</div>
+
+  <header>
+    <nav><a>LOOKBOOK</a><a>SHOP</a><a>BRANDS</a><a>JOURNAL</a></nav>
+    <a class="logo">Outfit Archive<small>SELECT SHOP · SEOUL</small></a>
+    <nav class="right"><a>SEARCH</a><a>ACCOUNT</a><a>CART (0)</a></nav>
+  </header>
+
+  <!-- 히어로 -->
+  <section class="hero">
+    <div class="hero-l">
+      <div class="eyebrow">LOOK 01 · WINTER 2026</div>
+      <h1>Some outfits<br>are worth<br><em>drawing.</em></h1>
+      <p>한 벌의 룩을 한 장의 그림으로.<br>그림 속 아이템을 누르면<br>바로 그 제품으로 이어집니다.</p>
+      <div class="foot">— The Duffle, Worn Daily.</div>
+    </div>
+    <div class="hero-img"><img src="look-22.jpg" alt="LOOK 01" /></div>
+    <div class="hero-r">
+      <div class="eyebrow">SHOP THE LOOK · 5 ITEMS</div>
+      <ul class="items">
+        <li><span class="n">a.</span><span><b>GLOVERALL</b>Classic Duffle Coat, Camel</span><span class="price">₩689,000</span></li>
+        <li><span class="n">b.</span><span><b>RENACTS</b>Cable Knit Crewneck</span><span class="price">₩219,000</span></li>
+        <li><span class="n">c.</span><span><b>ROUGH SIDE</b>Pleated Wide Trousers</span><span class="price">₩198,000</span></li>
+        <li><span class="n">d.</span><span><b>FILSON</b>Original Briefcase, Tan</span><span class="price">₩459,000</span></li>
+        <li><span class="n">e.</span><span><b>POSTMAN</b>Penny Loafer, Black</span><span class="price">₩329,000</span></li>
+      </ul>
+      <a class="btn">ADD ALL TO CART</a>
+      <a class="btn ghost">VIEW LOOK DETAIL</a>
+    </div>
+  </section>
+
+  <!-- 룩북 -->
+  <div class="sec-head">
+    <h2>This week's <em>looks</em></h2>
+    <div class="tabs"><span class="on">ALL</span><span>CASUAL</span><span>CLASSIC</span><span>WORKWEAR</span><span>IVY</span></div>
+  </div>
+  <div class="grid">
+    <div class="card"><div class="img"><img src="look-27.jpg" alt="" /></div><div class="meta"><span>LOOK 02</span><span>5 ITEMS</span></div><h3>Brown Duffle &amp; Khaki</h3><div class="brands">Gloverall · Anglan · Uniform Bridge · Blundstone</div></div>
+    <div class="card"><div class="img"><img src="look-24.jpg" alt="" /></div><div class="meta"><span>LOOK 03</span><span>4 ITEMS</span></div><h3>Workwear Layers</h3><div class="brands">DNSR · 999Humanity · Musinsa Standard</div></div>
+    <div class="card"><div class="img"><img src="look-26.jpg" alt="" /></div><div class="meta"><span>LOOK 04</span><span>5 ITEMS</span></div><h3>Olive Fishtail Parka</h3><div class="brands">Hazzys · Carhartt · Kimaura · J.M. Weston</div></div>
+    <div class="card"><div class="img"><img src="look-25.jpg" alt="" /></div><div class="meta"><span>LOOK 05</span><span>5 ITEMS</span></div><h3>Blazer on Cargo</h3><div class="brands">Comme des Garçons Homme · Beams · Converse</div></div>
+    <div class="card"><div class="img"><img src="look-28.jpg" alt="" /></div><div class="meta"><span>LOOK 06</span><span>4 ITEMS</span></div><h3>Grey Flannel, Beige Knit</h3><div class="brands">Beams · Uniqlo · Jil Sander · Effector</div></div>
+    <div class="card"><div class="img"><img src="look-29.jpg" alt="" /></div><div class="meta"><span>LOOK 07</span><span>5 ITEMS</span></div><h3>All Brown, Soft Tailoring</h3><div class="brands">Muji · Jil Sander · Jacques Marie Mage · Adidas</div></div>
+    <div class="card"><div class="img"><img src="look-30.jpg" alt="" /></div><div class="meta"><span>LOOK 08</span><span>4 ITEMS</span></div><h3>Varsity &amp; Penny Loafers</h3><div class="brands">Cartier · Vintage Varsity · Penny Loafers</div></div>
+    <div class="card"><div class="img"><img src="look-23.jpg" alt="" /></div><div class="meta"><span>LOOK 09</span><span>6 ITEMS</span></div><h3>Homo Galleriae</h3><div class="brands">Denim Jacket · Red Scarf · Leather Boots</div></div>
+  </div>
+
+  <div class="brandbar">
+    <span>Gloverall</span><span>FILSON</span><span>Jil Sander</span><span>BEAMS</span><span>J.M. Weston</span><span>CARHARTT</span><span>Blundstone</span><span>DNSR</span>
+  </div>
+
+  <!-- 저널 -->
+  <div class="sec-head">
+    <h2><em>Journal</em></h2>
+    <div class="tabs"><span class="on">ALL STORIES</span></div>
+  </div>
+  <div class="journal">
+    <article><div class="thumb"><img src="look-23.jpg" alt="" /></div><div><div class="eyebrow">FIELD NOTES · NO. 12</div><h4>갤러리에 가는 날의<br>옷차림 관찰기</h4><p>빨간 스카프 하나로 완성되는 차분한 데님 룩. 오래 서 있어도 편한 부츠까지, 한 장의 도감으로 정리했다.</p></div></article>
+    <article><div class="thumb"><img src="look-30.jpg" alt="" /></div><div><div class="eyebrow">STYLE GUIDE · NO. 11</div><h4>Some traditions are<br>worth dressing for.</h4><p>바시티 니트와 스트라이프 쇼츠, 그리고 페니 로퍼. 아이비 스타일을 지금 입는 방법.</p></div></article>
+  </div>
+
+  <footer>
+    <div class="logo">Outfit Archive</div>
+    <div>ABOUT &nbsp; STORES &nbsp; SHIPPING &nbsp; CONTACT</div>
+    <div>© 2026 OUTFIT ARCHIVE — MADE WITH CLAUDE CODE</div>
+  </footer>
+</div>
+</body>
+</html>

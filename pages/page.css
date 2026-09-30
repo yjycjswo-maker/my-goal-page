@@ -1,0 +1,66 @@
+/* ───────── 모든 페이지 공통 ─────────
+   page-0N.html 의 <style> 바로 뒤에서 불러와, 페이지마다 따로 두면 어긋나기 쉬운 규칙을 한 곳에 모읍니다.
+   (행 높이·설명 시작선·사진 행 배치를 여기서 바꾸면 1~8페이지에 똑같이 적용) */
+
+:root {
+  /* 설명 글자 크기와 폭: 가장 긴 설명(2페이지 01)이 23글자폭이라, 모든 페이지의 설명이 같은 선에서 시작 */
+  --desc-fs: clamp(15px, 1.25vw, 18px);
+  --desc-w: calc(23 * var(--desc-fs));
+  /* 사진이 들어간 행 높이 (글만 있는 행은 --row-h 360) */
+  --media-h: 480px;
+}
+@media (max-width: 767px) {
+  :root { --media-h: 600px; }
+}
+
+/* 인트로 제목 (h1) */
+.intro .intro-title {
+  max-width: none; margin: 0;
+  font-size: clamp(24px, 2.4vw, 34px); font-weight: 700; line-height: 1.15; letter-spacing: -0.02em;
+}
+
+/* 설명 */
+.desc { font-size: var(--desc-fs); }
+@media (min-width: 768px) {
+  /* 긴 제목이 가운데 칸을 밀어 넓히지 않도록 칸 폭 고정. 제목은 비어 있는 오른쪽 칸으로 넘쳐 보임 */
+  .row { grid-template-columns: minmax(0, 2fr) minmax(0, 5fr) minmax(0, 5fr); }
+  .title { width: max-content; }
+  .desc { width: min(var(--desc-w), 100%); max-width: none; }
+}
+
+/* 사진이 들어간 행: 설명 아래(오른쪽 칸)에 사진. 제목~항목 칸은 글만 있는 행과 같은 높이로 고정해 간격을 똑같이 */
+.row--media { height: var(--media-h); grid-template-rows: auto minmax(0, 1fr); row-gap: 20px; }
+.row--media .num, .row--media .mid { grid-row: 1 / -1; }
+.row--media .mid { height: calc(var(--row-h) - 90px); }
+.row--media .desc { grid-column: 3; grid-row: 1; }
+.row > .shot {
+  grid-column: 3; grid-row: 2; justify-self: end; align-self: stretch;
+  width: min(var(--desc-w), 100%); min-height: 0; margin: 0;
+  opacity: 0; transition: opacity .9s var(--ease-out) .3s;
+}
+.row.is-in > .shot, .is-shot .row > .shot { opacity: 1; }
+.row--nodesc > .shot { grid-row: 1 / -1; }
+.row > .shot img { display: block; height: 100%; width: auto; max-width: 100%; object-fit: contain; object-position: left top; }
+
+/* 마지막 사진 행: 쌓였을 때 화면 아래 끝까지 채워 사진을 크게 */
+.row--tall { height: max(var(--media-h), calc(100vh - var(--header-h) - var(--i) * var(--peek))); padding-bottom: 24px; }
+
+/* 큰 사진 행: 제목 아래 가운데~오른쪽 칸 전체에 사진, 화면 아래 끝까지 */
+.row--big {
+  height: max(var(--row-h), calc(100vh - var(--header-h) - var(--i) * var(--peek)));
+  grid-template-rows: auto minmax(0, 1fr); row-gap: 20px; padding-bottom: 24px;
+}
+.row--big .num { grid-row: 1 / -1; }
+.row--big .title { grid-column: 2; grid-row: 1; }
+.row--big > .shot--big { grid-column: 2 / -1; grid-row: 2; justify-self: start; width: 100%; }
+
+@media (max-width: 767px) {
+  .row--media { grid-template-rows: auto auto auto minmax(0, 1fr); }
+  .row--media .num { grid-row: 1; }
+  .row--media .desc { grid-column: 1 / -1; grid-row: 2; }
+  .row--media .items { grid-row: 3; align-self: start; }
+  .row > .shot, .row--nodesc > .shot { grid-column: 1 / -1; grid-row: 4; justify-self: start; width: auto; }
+  .row--big { grid-template-rows: auto minmax(0, 1fr); }
+  .row--big .num { grid-row: 1; }
+  .row--big > .shot--big { grid-column: 1 / -1; grid-row: 2; }
+}

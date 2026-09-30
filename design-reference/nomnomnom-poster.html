@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<style>
+  html, body { margin: 0; background: #000; }
+  .poster {
+    position: relative; width: 660px; height: 920px; overflow: hidden;
+    font-family: "Apple SD Gothic Neo", sans-serif;
+    background:
+      radial-gradient(ellipse 70% 45% at 55% 18%, rgba(255,245,225,.95), rgba(255,245,225,0) 70%),
+      linear-gradient(#e9dcc3 0%, #cdb48e 38%, #7a5a3a 62%, #2a1d14 80%, #0d0907 100%);
+  }
+  svg { position: absolute; inset: 0; }
+  .tag {
+    position: absolute; left: 0; right: 0; top: 520px; text-align: center;
+    font-weight: 800; font-size: 26px; color: #fff; letter-spacing: -0.02em;
+    text-shadow: 0 2px 0 #7a1e10, 0 0 12px rgba(0,0,0,.6);
+  }
+  .tag b { color: #ffcf3a; }
+  .title {
+    position: absolute; left: 0; right: 0; top: 566px; text-align: center;
+    font-weight: 900; font-size: 92px; line-height: .98; letter-spacing: -0.07em; color: #fff;
+    transform: skewX(-12deg) rotate(-3deg);
+    -webkit-text-stroke: 3px #111;
+    paint-order: stroke fill;
+    text-shadow: 6px 6px 0 #111, 0 0 30px rgba(0,0,0,.55);
+  }
+  .title .s { font-size: .62em; letter-spacing: -0.04em; }
+  .credits {
+    position: absolute; left: 22px; right: 22px; bottom: 16px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    color: #ddd; font-size: 11px; font-weight: 600; letter-spacing: -0.01em;
+  }
+  .credits b { color: #fff; font-size: 13px; }
+  .date { font-family: Georgia, serif; font-size: 26px; font-weight: 700; color: #6fb6d6; letter-spacing: .02em; }
+</style>
+</head>
+<body>
+<div class="poster" id="poster">
+  <svg id="art" viewBox="0 0 660 920" width="660" height="920" shape-rendering="crispEdges"></svg>
+  <div class="tag">딱 한 놈이 <b>사고</b> 친다!</div>
+  <div class="title">뛰어난<span class="s">놈</span><br>동등한<span class="s">놈</span><br>덜떨어진<span class="s">놈</span></div>
+  <div class="credits">
+    <div>&lt;클로드코드 과정&gt; 나만의 에이전트 팀 &nbsp;<b>뛰어난 놈 · 동등한 놈 · 덜떨어진 놈</b><br>Made with Claude Code</div>
+    <div class="date">2026.9</div>
+  </div>
+</div>
+<script>
+  const NS = "http://www.w3.org/2000/svg";
+  const art = document.getElementById("art");
+  const rect = (g, x, y, w, h, fill, extra = {}) => {
+    const r = document.createElementNS(NS, "rect");
+    Object.entries({ x, y, width: w, height: h, fill, ...extra }).forEach(([k, v]) => r.setAttribute(k, v));
+    g.appendChild(r); return r;
+  };
+  const group = (parent = art) => { const g = document.createElementNS(NS, "g"); parent.appendChild(g); return g; };
+
+  // 흙먼지 / 파편
+  const dust = group();
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 140; i++) {
+    const s = 2 + rnd() * 6;
+    rect(dust, rnd() * 660, rnd() * 380, s, s * (0.4 + rnd()), "#2b2018", { opacity: (0.25 + rnd() * 0.5).toFixed(2), transform: `rotate(${rnd() * 90} 330 200)` });
+  }
+  // 바닥 금 (깨진 유리 느낌)
+  const cracks = group();
+  [[330, 900, 40, 760], [330, 900, 620, 780], [330, 900, 180, 700], [330, 900, 500, 690], [330, 900, 0, 880], [330, 900, 660, 870]].forEach(([x1, y1, x2, y2]) => {
+    const l = document.createElementNS(NS, "line");
+    Object.entries({ x1, y1, x2, y2, stroke: "rgba(255,255,255,.18)", "stroke-width": 1.5 }).forEach(([k, v]) => l.setAttribute(k, v));
+    cracks.appendChild(l);
+  });
+
+  // 클로드 캐릭터 (픽셀). X 몸, E 눈, M 입, . 빈칸
+  const BODY = [
+    "..XXXXXXXXXX..",
+    "..XXXXXXXXXX..",
+    "..XXEXXXXEXX..",
+    "XXXXEXXXXEXXXX",
+    "XXXXXXXXXXXXXX",
+    "..XXXXXXXXXX..",
+    "..XXXXXXXXXX..",
+    "..X.X....X.X..",
+    "..X.X....X.X..",
+  ];
+  const ORANGE = "#d97757", ORANGE_D = "#b85c3e", EYE = "#1a1210";
+
+  function clawd({ x, y, px, rows = BODY, tilt = 0, extras = [] }) {
+    const g = group();
+    g.setAttribute("transform", `translate(${x} ${y}) rotate(${tilt} ${7 * px} ${4.5 * px})`);
+    // 그림자
+    rect(g, 1.5 * px, 9.2 * px, 11 * px, 0.6 * px, "rgba(0,0,0,.35)", { rx: px * .3 });
+    rows.forEach((row, r) => [...row].forEach((c, col) => {
+      if (c === "X") rect(g, col * px, r * px, px + .5, px + .5, r >= 7 ? ORANGE_D : ORANGE);
+      if (c === "E" || c === "M") rect(g, col * px, r * px, px + .5, px + .5, EYE);
+      if (c === "W") rect(g, col * px, r * px, px + .5, px + .5, "#fff");
+    }));
+    extras.forEach(([cx, cy, w, h, fill]) => rect(g, cx * px, cy * px, w * px + .5, h * px + .5, fill));
+    return g;
+  }
+
+  // 뛰어난 놈: 왼쪽 뒤, 카우보이 모자 + 스카프
+  clawd({
+    x: 18, y: 120, px: 15, tilt: -6,
+    extras: [
+      [-1, -0.6, 16, 1, "#8a6a45"], [0, -0.2, 14, .5, "#6b4f31"],
+      [3, -3, 8, 2.6, "#a9855a"], [3, -1.2, 8, .6, "#5a3e24"],
+      [2, 5, 10, 1, "#c9b27a"],
+    ],
+  });
+
+  // 동등한 놈: 오른쪽 뒤, 넘긴 머리 + 조끼
+  clawd({
+    x: 400, y: 70, px: 16, tilt: 5,
+    extras: [
+      [2, -1.2, 10, 1.4, "#15171c"], [7, -2, 6, 1, "#15171c"], [10, -1, 3, 2.4, "#15171c"],
+      [2, 4, 3.5, 3, "#27324a"], [8.5, 4, 3.5, 3, "#27324a"], [5.5, 4, 3, 3, "#f1eee8"],
+      [6.5, 4.2, 1, 1, "#9c2a2a"],
+    ],
+  });
+
+  // 덜떨어진 놈: 가운데 앞, 비행 모자 + 고글 + 웃는 입
+  const LAUGH = [
+    "..XXXXXXXXXX..",
+    "..XXXXXXXXXX..",
+    "..XXEXXXXEXX..",
+    "XXXXEXXXXEXXXX",
+    "XXXXXMMMMXXXXX",
+    "..XXXMWWMXXX..",
+    "..XXXXMMXXXX..",
+    "..X.X....X.X..",
+    "..X.X....X.X..",
+  ];
+  // 사고: 뒤에서 튀는 불꽃
+  const fire = group();
+  [[180, 330, 60, "#ff7a1a"], [470, 350, 46, "#ffb02e"], [150, 420, 34, "#ff5a1f"], [505, 430, 30, "#ff8a2a"]].forEach(([cx, cy, s, c]) => {
+    for (let i = 0; i < 9; i++) {
+      const a = (i / 9) * Math.PI * 2, d = s * (0.5 + rnd() * 0.6);
+      rect(fire, cx + Math.cos(a) * d, cy + Math.sin(a) * d, 8, 8, c, { opacity: .85 });
+    }
+    rect(fire, cx - s * .25, cy - s * .25, s * .5, s * .5, c, { opacity: .7 });
+  });
+  clawd({
+    x: 132, y: 250, px: 28, rows: LAUGH, tilt: -3,
+    extras: [
+      [1.6, -1.4, 10.8, 1.8, "#5b3b22"], [1.2, 0, 1.2, 3, "#5b3b22"], [11.6, 0, 1.2, 3, "#5b3b22"],
+      [3, -1.1, 3.2, 1.6, "#3a3f44"], [7.8, -1.1, 3.2, 1.6, "#3a3f44"],
+      [3.4, -.8, 2.4, 1, "#9fd3e6"], [8.2, -.8, 2.4, 1, "#9fd3e6"], [6.2, -.7, 1.6, .5, "#3a3f44"],
+      [-0.6, 3.2, 1, 1, "#e8c9a8"], [13.6, 3.2, 1, 1, "#e8c9a8"],
+    ],
+  });
+</script>
+</body>
+</html>
