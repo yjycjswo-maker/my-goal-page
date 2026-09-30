@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "pnpm install --dir carousel-3d --frozen-lockfile",
+  "buildCommand": "pnpm --dir carousel-3d build",
+  "outputDirectory": "carousel-3d/dist",
+  "rewrites": [{ "source": "/projects/:path*", "destination": "/index.html" }]
+}

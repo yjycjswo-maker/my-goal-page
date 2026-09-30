@@ -16,6 +16,22 @@
       ],
       "port": 5199,
       "url": "http://127.0.0.1:5199"
+    },
+    {
+      "name": "carousel-3d-prod",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "carousel-3d",
+        "preview",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "5200",
+        "--strictPort"
+      ],
+      "port": 5200,
+      "url": "http://127.0.0.1:5200"
     }
   ]
 }

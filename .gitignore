@@ -8,3 +8,6 @@ dist/
 # 로컬에 설치한 AI 스킬 (각자 설치)
 .claude/skills/
 .agents/
+
+# Vercel CLI 로컬 설정
+.vercel/

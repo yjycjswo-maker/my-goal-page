@@ -27,4 +27,9 @@ python3 carousel-3d/scripts/sync-pages.py   # pages/ 사본 갱신
 python3 carousel-3d/scripts/shoot-page.py 3  # 3번 카드 썸네일 다시 찍기 (Chrome 필요)
 ```
 
+## 배포 (Vercel)
+
+저장소를 Vercel 에 연결하면 설정 없이 배포됩니다. 루트의 `vercel.json` 이 `carousel-3d` 를 설치·빌드하고 `carousel-3d/dist` 를 올립니다.
+(Vercel 에서 Root Directory 를 `carousel-3d` 로 지정해도 됩니다. 그때는 Vite 가 자동으로 잡힙니다.)
+
 Made with Claude Code
